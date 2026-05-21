@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ISS Proximity Notifier — Cagayan de Oro</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #060a12;
+    --bg2:      #0c1220;
+    --bg3:      #111827;
+    --border:   rgba(99,179,255,0.12);
+    --accent:   #3b9eff;
+    --green:    #22d3a0;
+    --red:      #ff5f6d;
+    --yellow:   #fbbf24;
+    --text:     #e2eaf8;
+    --muted:    #6b7fa8;
+    --font-hd:  'Syne', sans-serif;
+    --font-mono:'Space Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-mono); overflow-x: hidden; }
+
+  /* starfield */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 35%, rgba(255,255,255,.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 85%, rgba(255,255,255,.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 55%, rgba(255,255,255,.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 45%, rgba(255,255,255,.3) 0%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 65% 30%, rgba(255,255,255,.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,.4) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* header */
+  header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon { width: 40px; height: 40px; position: relative; }
+  .logo-icon svg { width: 100%; height: 100%; }
+  h1 { font-family: var(--font-hd); font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .live-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease-in-out infinite; }
+  .live-dot.alert { background: var(--red); }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+
+  /* metrics row */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; transition: border-color .3s; }
+  .metric.alert-card { border-color: rgba(255,95,109,.4); background: rgba(255,95,109,.07); }
+  .metric.safe-card  { border-color: rgba(34,211,160,.3); background: rgba(34,211,160,.06); }
+  .ml { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px; }
+  .mv { font-size: 1.6rem; font-weight: 700; font-family: var(--font-hd); line-height: 1; }
+  .mu { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .mv.green { color: var(--green); }
+  .mv.red   { color: var(--red); }
+  .mv.yellow{ color: var(--yellow); }
+  .mv.blue  { color: var(--accent); }
+
+  /* map */
+  .map-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .section-title { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content:''; flex:1; height:1px; background: var(--border); }
+  #worldMap { width: 100%; border-radius: 8px; overflow: hidden; }
+
+  /* two-col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  @media(max-width:700px){ .two-col { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; }
+
+  /* passes table */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { color: var(--muted); font-weight: 400; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+  td { padding: 7px 8px; border-bottom: 1px solid rgba(99,179,255,.06); color: var(--muted); }
+  tr.next-row td { color: var(--green); }
+  tr:last-child td { border-bottom: none; }
+  .elev-bar { display: inline-block; height: 4px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; opacity: .7; }
+
+  /* log */
+  .log-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgba(99,179,255,.06); font-size: 11px; align-items: center; }
+  .log-row:last-child { border-bottom: none; }
+  .log-ts { color: var(--muted); }
+  .log-dist { color: var(--text); font-weight: 700; }
+  .log-near { font-size: 10px; padding: 2px 7px; border-radius: 99px; }
+  .log-near.y { background: rgba(34,211,160,.15); color: var(--green); }
+  .log-near.n { background: rgba(107,127,168,.1); color: var(--muted); }
+
+  /* alert banner */
+  .alert-banner { border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; font-size: 13px; border: 1px solid; transition: all .4s; }
+  .alert-banner.far  { background: rgba(107,127,168,.08); border-color: var(--border); color: var(--muted); }
+  .alert-banner.near { background: rgba(255,95,109,.1);   border-color: rgba(255,95,109,.4); color: #ffb3b8; animation: glow 1s ease-in-out infinite alternate; }
+  @keyframes glow { from{box-shadow:0 0 8px rgba(255,95,109,.2)} to{box-shadow:0 0 24px rgba(255,95,109,.5)} }
+  .alert-icon { font-size: 22px; }
+
+  /* refresh btn */
+  .refresh-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: .08em; }
+  .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* countdown */
+  .countdown { font-size: 11px; color: var(--muted); }
+  #nextRefresh { color: var(--accent); }
+
+  .loading { opacity: .4; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="18" stroke="#3b9eff" stroke-width="1.5" stroke-dasharray="4 3" opacity=".4"/>
+          <circle cx="20" cy="20" r="3" fill="#3b9eff"/>
+          <rect x="14" y="18.5" width="12" height="3" rx="1.5" fill="#3b9eff" opacity=".8"/>
+          <rect x="18.5" y="14" width="3" height="12" rx="1.5" fill="#3b9eff" opacity=".8"/>
+          <circle cx="20" cy="20" r="7" stroke="#22d3a0" stroke-width="1" opacity=".3"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ISS <span>Proximity</span> Notifier</h1>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">Watching over Cagayan de Oro · 8.48°N 124.65°E</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="countdown">Next refresh in <span id="nextRefresh">60</span>s</div>
+      <div class="live-badge"><div class="live-dot" id="liveDot"></div><span id="liveStatus">connecting</span></div>
+      <button class="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <!-- alert banner -->
+  <div class="alert-banner far" id="alertBanner">
+    <span class="alert-icon">🛸</span>
+    <span id="alertText">Fetching ISS position…</span>
+  </div>
+
+  <!-- metrics -->
+  <div class="metrics">
+    <div class="metric" id="cardDist">
+      <div class="ml">Distance to CDO</div>
+      <div class="mv blue" id="mDist">—</div>
+      <div class="mu">kilometers</div>
+    </div>
+    <div class="metric">
+      <div class="ml">ISS Latitude</div>
+      <div class="mv" id="mLat">—</div>
+      <div class="mu">degrees</div>
+    </div>
+    <div class="metric">
+      <div class="ml">ISS Longitude</div>
+      <div class="mv" id="mLon">—</div>
+      <div class="mu">degrees</div>
+    </div>
+    <div class="metric">
+      <div class="ml">Altitude</div>
+      <div class="mv yellow" id="mAlt">—</div>
+      <div class="mu">km above Earth</div>
+    </div>
+    <div class="metric">
+      <div class="ml">Speed</div>
+      <div class="mv" id="mSpeed">—</div>
+      <div class="mu">km/h</div>
+    </div>
+    <div class="metric">
+      <div class="ml">Alert Radius</div>
+      <div class="mv" style="color:var(--muted)">500</div>
+      <div class="mu">km threshold</div>
+    </div>
+  </div>
+
+  <!-- world map -->
+  <div class="map-section">
+    <div class="section-title">Live orbital track</div>
+    <svg id="worldMap" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" style="background:#0a1628;border-radius:8px">
+      <!-- grid lines -->
+      <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
+      <line x1="400" y1="0" x2="400" y2="400" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
+      <line x1="0" y1="100" x2="800" y2="100" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
+      <line x1="0" y1="300" x2="800" y2="300" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
+      <line x1="200" y1="0" x2="200" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
+      <line x1="600" y1="0" x2="600" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
+      <!-- labels -->
+      <text x="6" y="197" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">0°</text>
+      <text x="6" y="22" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°N</text>
+      <text x="6" y="394" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°S</text>
+      <!-- trail -->
+      <polyline id="trailLine" points="" fill="none" stroke="#3b9eff" stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>
+      <!-- CDO radius -->
+      <circle id="cdoRadius" cx="0" cy="0" r="0" fill="none" stroke="#22d3a0" stroke-width="1" stroke-dasharray="4 3" opacity="0"/>
+      <!-- CDO dot -->
+      <circle id="cdoDot" cx="0" cy="0" r="0" fill="#22d3a0" opacity="0"/>
+      <text id="cdoLabel" x="0" y="0" font-size="9" fill="#22d3a0" font-family="Space Mono" opacity="0">CDO</text>
+      <!-- ISS dot -->
+      <circle id="issDot" cx="400" cy="200" r="0" fill="#3b9eff" opacity="0"/>
+      <circle id="issGlow" cx="400" cy="200" r="0" fill="none" stroke="#3b9eff" stroke-width="1" opacity="0"/>
+      <text id="issLabel" x="0" y="0" font-size="9" fill="#3b9eff" font-family="Space Mono" opacity="0">ISS</text>
+    </svg>
+  </div>
+
+  <!-- passes + log -->
+  <div class="two-col">
+    <div class="panel">
+      <div class="section-title">Upcoming passes over CDO</div>
+      <table>
+        <thead><tr><th>Rise Time (PHT)</th><th>Max Elev</th><th>Duration</th></tr></thead>
+        <tbody id="passTable"><tr><td colspan="3" style="text-align:center;padding:1rem">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="section-title">Position log</div>
+      <div id="logList"><div style="color:var(--muted);font-size:12px;text-align:center;padding:1rem">Loading…</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const trail = [];
+
+function toSVG(lat, lon){ return { x: ((lon+180)/360)*800, y: ((90-lat)/180)*400 }; }
+
+function updateMap(lat, lon){
+  const p = toSVG(lat, lon);
+  const c = toSVG(8.4822, 124.6472);
+  trail.push(p); if(trail.length > 60) trail.shift();
+  document.getElementById('trailLine').setAttribute('points', trail.map(t=>t.x+','+t.y).join(' '));
+  const id = document.getElementById('issDot');
+  id.setAttribute('cx',p.x); id.setAttribute('cy',p.y); id.setAttribute('r','5'); id.setAttribute('opacity','1');
+  const ig = document.getElementById('issGlow');
+  ig.setAttribute('cx',p.x); ig.setAttribute('cy',p.y); ig.setAttribute('r','10'); ig.setAttribute('opacity','0.4');
+  const il = document.getElementById('issLabel');
+  il.setAttribute('x',p.x+8); il.setAttribute('y',p.y+4); il.setAttribute('opacity','1');
+  const cd = document.getElementById('cdoDot');
+  cd.setAttribute('cx',c.x); cd.setAttribute('cy',c.y); cd.setAttribute('r','4'); cd.setAttribute('opacity','1');
+  const cl = document.getElementById('cdoLabel');
+  cl.setAttribute('x',c.x+6); cl.setAttribute('y',c.y-6); cl.setAttribute('opacity','1');
+  const cr = document.getElementById('cdoRadius');
+  cr.setAttribute('cx',c.x); cr.setAttribute('cy',c.y); cr.setAttribute('r', ((500/20015)*800).toFixed(1)); cr.setAttribute('opacity','0.5');
+}
+
+async function fetchISS(){
+  try {
+    const r = await fetch('/api/iss');
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    document.getElementById('mDist').textContent  = Math.round(d.distance).toLocaleString();
+    document.getElementById('mLat').textContent   = d.latitude.toFixed(2)+'°';
+    document.getElementById('mLon').textContent   = d.longitude.toFixed(2)+'°';
+    document.getElementById('mAlt').textContent   = d.altitude.toFixed(0);
+    document.getElementById('mSpeed').textContent = Math.round(d.velocity).toLocaleString();
+    const banner = document.getElementById('alertBanner');
+    const alertText = document.getElementById('alertText');
+    const liveDot = document.getElementById('liveDot');
+    const liveStatus = document.getElementById('liveStatus');
+    const cardDist = document.getElementById('cardDist');
+    if(d.is_nearby){
+      banner.className='alert-banner near';
+      alertText.textContent=`🚨 ISS is only ${Math.round(d.distance).toLocaleString()} km away! Look up at the sky over ${d.city}!`;
+      liveDot.className='live-dot alert';
+      liveStatus.textContent='NEARBY';
+      cardDist.className='metric alert-card';
+      document.getElementById('mDist').className='mv red';
+    } else {
+      banner.className='alert-banner far';
+      alertText.textContent=`ISS is ${Math.round(d.distance).toLocaleString()} km from ${d.city} — outside alert radius (${d.threshold} km).`;
+      liveDot.className='live-dot';
+      liveStatus.textContent='tracking';
+      cardDist.className='metric safe-card';
+      document.getElementById('mDist').className='mv green';
+    }
+    updateMap(d.latitude, d.longitude);
+  } catch(e){ console.error('ISS fetch error:', e); }
+}
+
+async function fetchPasses(){
+  try {
+    const r = await fetch('/api/passes');
+    const passes = await r.json();
+    const tb = document.getElementById('passTable');
+    if(!passes.length){ tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--muted)">No passes in next 24h</td></tr>'; return; }
+    tb.innerHTML = passes.map((p,i) => `
+      <tr class="${i===0?'next-row':''}">
+        <td>${p.rise_pht}${i===0?' <span style="font-size:10px;color:var(--green)">← NEXT</span>':''}</td>
+        <td><span class="elev-bar" style="width:${Math.min(p.max_elev,90)/90*40}px"></span>${p.max_elev.toFixed(1)}°</td>
+        <td>${p.duration}</td>
+      </tr>`).join('');
+  } catch(e){ console.error('Passes fetch error:', e); }
+}
+
+async function fetchLog(){
+  try {
+    const r = await fetch('/api/log');
+    const rows = await r.json();
+    const el = document.getElementById('logList');
+    el.innerHTML = rows.map(row => `
+      <div class="log-row">
+        <div class="log-ts">${row.timestamp.substring(11,19)} UTC</div>
+        <div class="log-dist">${Math.round(row.distance).toLocaleString()} km</div>
+        <div class="log-near ${row.is_nearby?'y':'n'}">${row.is_nearby?'NEAR':'far'}</div>
+      </div>`).join('');
+  } catch(e){ console.error('Log fetch error:', e); }
+}
+
+async function fetchAll(){
+  await fetchISS();
+  await fetchPasses();
+  await fetchLog();
+}
+
+// countdown timer
+let countdown = 60;
+setInterval(() => {
+  countdown--;
+  document.getElementById('nextRefresh').textContent = countdown;
+  if(countdown <= 0){ countdown = 60; fetchAll(); }
+}, 1000);
+
+fetchAll();
+</script>
+</body>
+</html>
