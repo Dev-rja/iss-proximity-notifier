@@ -1,12 +1,22 @@
 # ── predictor.py ───────────────────────────────────────────
+import builtins
+_builtin_round = builtins.round
+def _safe_round(x, *args, **kwargs):
+    try:
+        return _builtin_round(x, *args, **kwargs)
+    except TypeError:
+        return x
+builtins.round = _safe_round
+
 from datetime import datetime, timezone, timedelta
 from pyorbital.orbital import Orbital
 import urllib.request
 
+from config import MY_CITY, MY_LAT, MY_LON
+
 MY_ALT = 0.0
 LOOK_AHEAD_HOURS = 24
 
-# Multiple TLE sources — tries each until one works
 TLE_SOURCES = [
     "https://live.ariss.org/iss.txt",
     "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE",
@@ -14,7 +24,6 @@ TLE_SOURCES = [
 ]
 
 def fetch_tle():
-    """Try multiple sources to get the latest ISS TLE lines."""
     for url in TLE_SOURCES:
         try:
             req = urllib.request.Request(
@@ -23,7 +32,6 @@ def fetch_tle():
             )
             with urllib.request.urlopen(req, timeout=10) as resp:
                 lines = [l.strip() for l in resp.read().decode("utf-8").strip().splitlines() if l.strip()]
-            # Find TLE lines (line1 starts with '1 ', line2 starts with '2 ')
             l1 = next((l for l in lines if l.startswith("1 ")), None)
             l2 = next((l for l in lines if l.startswith("2 ")), None)
             if l1 and l2:
@@ -35,7 +43,6 @@ def fetch_tle():
 
 
 def get_orb():
-    """Return an Orbital object using live TLE, fallback to pyorbital default."""
     l1, l2 = fetch_tle()
     if l1 and l2:
         return Orbital("ISS (ZARYA)", line1=l1, line2=l2)
@@ -44,7 +51,6 @@ def get_orb():
 
 
 def get_next_passes():
-    """Predict next ISS passes — prints to terminal."""
     try:
         orb = get_orb()
         now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -65,7 +71,6 @@ def get_next_passes():
 
 
 def get_next_passes_data():
-    """Return passes as a list of dicts for the web dashboard API."""
     try:
         orb = get_orb()
         now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -80,7 +85,7 @@ def get_next_passes_data():
                 "rise_utc": str(rise),
                 "rise_pht": rise_pht.strftime("%b %d %H:%M:%S"),
                 "fall_utc": str(fall),
-                "max_elev": round(max_elev, 1),
+                "max_elev": _builtin_round(max_elev, 1),
                 "duration": f"{mins}m {secs}s" if mins > 0 else f"{secs}s",
             })
         return result
