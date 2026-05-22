@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timezone
 from config import DB_FILE
 
-# On Vercel, use /tmp (writable). Locally, use DB_FILE from config.
 _DB = "/tmp/iss_log.db" if os.environ.get("VERCEL") else DB_FILE
 
 def init_db():
@@ -24,10 +23,10 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print(f"[DB] Database ready: {_DB}")
 
 def save_position(lat, lon, altitude, velocity, distance, is_nearby):
     """Insert one ISS observation into the database."""
+    init_db()  # ← ensure table exists first
     conn = sqlite3.connect(_DB)
     conn.execute("""
         INSERT INTO iss_log (timestamp, latitude, longitude, altitude, velocity, distance, is_nearby)
@@ -43,6 +42,7 @@ def save_position(lat, lon, altitude, velocity, distance, is_nearby):
 
 def get_recent(limit=10):
     """Fetch the most recent ISS observations."""
+    init_db()  # ← ensure table exists first
     conn = sqlite3.connect(_DB)
     rows = conn.execute("""
         SELECT timestamp, latitude, longitude, distance, is_nearby
