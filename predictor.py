@@ -3,14 +3,12 @@ from datetime import datetime, timezone, timedelta
 from pyorbital.orbital import Orbital
 import urllib.request
 
-from config import MY_CITY, MY_LAT, MY_LON
-
 MY_ALT = 0.0
 LOOK_AHEAD_HOURS = 24
 
 # Multiple TLE sources — tries each until one works
 TLE_SOURCES = [
-    "http://live.ariss.org/iss.txt",
+    "https://live.ariss.org/iss.txt",
     "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE",
     "https://celestrak.org/satcat/tle.php?CATNR=25544",
 ]
