@@ -1,11 +1,15 @@
 # ── storage.py ─────────────────────────────────────────────
 import sqlite3
+import os
 from datetime import datetime, timezone
 from config import DB_FILE
 
+# On Vercel, use /tmp (writable). Locally, use DB_FILE from config.
+_DB = "/tmp/iss_log.db" if os.environ.get("VERCEL") else DB_FILE
+
 def init_db():
     """Create the database and table if they don't exist."""
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(_DB)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS iss_log (
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,11 +24,11 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print(f"[DB] Database ready: {DB_FILE}")
+    print(f"[DB] Database ready: {_DB}")
 
 def save_position(lat, lon, altitude, velocity, distance, is_nearby):
     """Insert one ISS observation into the database."""
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(_DB)
     conn.execute("""
         INSERT INTO iss_log (timestamp, latitude, longitude, altitude, velocity, distance, is_nearby)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -39,7 +43,7 @@ def save_position(lat, lon, altitude, velocity, distance, is_nearby):
 
 def get_recent(limit=10):
     """Fetch the most recent ISS observations."""
-    conn = sqlite3.connect(DB_FILE)
+    conn = sqlite3.connect(_DB)
     rows = conn.execute("""
         SELECT timestamp, latitude, longitude, distance, is_nearby
         FROM iss_log ORDER BY id DESC LIMIT ?
