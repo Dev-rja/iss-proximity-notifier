@@ -1,0 +1,8 @@
+{
+    "crons": [
+      {
+        "path": "/api/iss",
+        "schedule": "*/5 * * * *"
+      }
+    ]
+  }
