@@ -1,4 +1,4 @@
-# ── storage.py ─────────────────────────────────────────────
+# storage.py
 import sqlite3
 import os
 from datetime import datetime, timezone

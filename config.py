@@ -1,5 +1,5 @@
-# ── config.py ──────────────────────────────────────────────
-# Your city coordinates
+# config.py
+# City coordinates
 MY_CITY = "Cagayan de Oro"
 MY_LAT  = 8.4822
 MY_LON  = 124.6472

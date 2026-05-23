@@ -1,4 +1,5 @@
-# ── app.py ─────────────────────────────────────────────────
+# app.py
+import monkey_patch  # MUST be first — fixes Python 3.13 + pyorbital round() bug
 """
 ISS Proximity Notifier — Web Dashboard
 Run:  python app.py
@@ -17,7 +18,7 @@ from config     import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM, DB_FILE
 
 app = Flask(__name__)
 
-# ── HTML template ──────────────────────────────────────────
+# HTML template
 HTML = open("templates/index.html", encoding="utf-8").read()
 
 @app.route("/")

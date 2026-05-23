@@ -1,4 +1,4 @@
-# ── notifier.py ────────────────────────────────────────────
+# notifier.py
 import platform
 import subprocess
 

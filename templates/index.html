@@ -15,49 +15,69 @@
   /* CRT Scanline Overlay */
   body::after {
     content: " "; position: fixed; inset: 0; pointer-events: none; z-index: 10;
-    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%), 
+    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%),
                 linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03));
     background-size: 100% 4px, 3px 100%;
   }
 
   body { background: var(--bg); color: var(--text); font-family: var(--font-mono); text-transform: uppercase; margin: 0; padding: 20px; }
 
-  /* HARDENED GRID LAYOUT */
   .wrap { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-  /* HEADER: Logo + Text Alignment */
   header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
   .logo { display: flex; align-items: center; gap: 15px; }
   .logo-icon { width: 40px; height: 40px; flex-shrink: 0; }
   .logo-icon svg { width: 100%; height: 100%; display: block; }
   h1 { font-family: var(--font-hd); margin: 0; font-size: 1.5rem; letter-spacing: -1px; }
 
-  /* HARDENED PANELS */
   .panel, .metric, .map-section { background: var(--bg2); border: 1px solid var(--border); padding: 15px; border-radius: 0; }
-  
-  /* METRICS CONSOLE */
+
   .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px; }
   .metric { border-left: 4px solid var(--accent); }
-  /* Base style: neutral/white */
-  .mv { 
-    font-size: 1.6rem; 
-    font-weight: 700; 
-    color: #fff; /* Keep this white or light gray */
-    text-shadow: 0 0 5px var(--accent); 
-  }
-
-  /* Specific color overrides */
+  .mv { font-size: 1.6rem; font-weight: 700; color: #fff; text-shadow: 0 0 5px var(--accent); }
   .mv.green { color: var(--green); text-shadow: 0 0 8px var(--green); }
   .mv.red { color: var(--red); text-shadow: 0 0 8px var(--red); }
   .mv.yellow { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
 
-  /* MAP CONSOLE */
   #worldMap { width: 100%; height: auto; display: block; border: 1px solid var(--border); background: #000; }
 
-  /* UI UTILITIES */
   .alert-banner { border: 2px solid var(--accent); background: rgba(0,0,0,0.8); padding: 15px; }
   .refresh-btn { border: 1px solid var(--accent); color: var(--accent); cursor: pointer; background: transparent; padding: 5px 15px; }
   .refresh-btn:hover { background: var(--accent); color: #000; }
+
+  /* TWO COLUMN LAYOUT */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  @media(max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* SECTION TITLE + METRIC LABELS */
+  .section-title { font-size: 10px; color: var(--accent); letter-spacing: .12em; margin-bottom: 12px; }
+  .ml { font-size: 10px; color: #6b7fa8; letter-spacing: .08em; margin-bottom: 4px; }
+  .mu { font-size: 10px; color: #6b7fa8; margin-top: 2px; }
+
+  /* PASSES TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { color: var(--accent); font-weight: 400; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: .08em; }
+  td { padding: 6px 8px; border-bottom: 1px solid rgba(26,42,68,.6); color: #6b7fa8; }
+  tr.next-row td { color: var(--green); }
+  tr:last-child td { border-bottom: none; }
+  .elev-bar { display: inline-block; height: 4px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; opacity: .7; }
+
+  /* POSITION LOG */
+  .log-row { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(26,42,68,.6); font-size: 11px; }
+  .log-row:last-child { border-bottom: none; }
+  .log-ts { color: #6b7fa8; flex: 1; }
+  .log-dist { color: var(--text); font-weight: 700; white-space: nowrap; }
+  .log-near { font-size: 10px; padding: 2px 7px; border-radius: 2px; white-space: nowrap; }
+  .log-near.y { background: rgba(0,255,65,.12); color: var(--green); }
+  .log-near.n { background: rgba(26,42,68,.6); color: #6b7fa8; }
+
+  /* HEADER BADGES */
+  .countdown { font-size: 11px; color: #6b7fa8; }
+  #nextRefresh { color: var(--accent); }
+  .live-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #6b7fa8; }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease-in-out infinite; }
+  .live-dot.alert { background: var(--red); }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
 </style>
 </head>
 <body>
@@ -76,7 +96,7 @@
       </div>
       <div>
         <h1>ISS <span>Proximity</span> Notifier</h1>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px">Watching over Cagayan de Oro · 8.48°N 124.65°E</div>
+        <div style="font-size:11px;color:#6b7fa8;margin-top:3px">Watching over Cagayan de Oro · 8.48°N 124.65°E</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
@@ -121,7 +141,7 @@
     </div>
     <div class="metric">
       <div class="ml">Alert Radius</div>
-      <div class="mv" style="color:var(--muted)">500</div>
+      <div class="mv" style="color:#6b7fa8">500</div>
       <div class="mu">km threshold</div>
     </div>
   </div>
@@ -130,25 +150,19 @@
   <div class="map-section">
     <div class="section-title">Live orbital track</div>
     <svg id="worldMap" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" style="background:#0a1628;border-radius:8px">
-      <!-- grid lines -->
       <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
       <line x1="400" y1="0" x2="400" y2="400" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
       <line x1="0" y1="100" x2="800" y2="100" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
       <line x1="0" y1="300" x2="800" y2="300" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
       <line x1="200" y1="0" x2="200" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
       <line x1="600" y1="0" x2="600" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
-      <!-- labels -->
       <text x="6" y="197" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">0°</text>
       <text x="6" y="22" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°N</text>
       <text x="6" y="394" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°S</text>
-      <!-- trail -->
       <polyline id="trailLine" points="" fill="none" stroke="#3b9eff" stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>
-      <!-- CDO radius -->
       <circle id="cdoRadius" cx="0" cy="0" r="0" fill="none" stroke="#22d3a0" stroke-width="1" stroke-dasharray="4 3" opacity="0"/>
-      <!-- CDO dot -->
       <circle id="cdoDot" cx="0" cy="0" r="0" fill="#22d3a0" opacity="0"/>
       <text id="cdoLabel" x="0" y="0" font-size="9" fill="#22d3a0" font-family="Space Mono" opacity="0">CDO</text>
-      <!-- ISS dot -->
       <circle id="issDot" cx="400" cy="200" r="0" fill="#3b9eff" opacity="0"/>
       <circle id="issGlow" cx="400" cy="200" r="0" fill="none" stroke="#3b9eff" stroke-width="1" opacity="0"/>
       <text id="issLabel" x="0" y="0" font-size="9" fill="#3b9eff" font-family="Space Mono" opacity="0">ISS</text>
@@ -166,7 +180,7 @@
     </div>
     <div class="panel">
       <div class="section-title">Position log</div>
-      <div id="logList"><div style="color:var(--muted);font-size:12px;text-align:center;padding:1rem">Loading…</div></div>
+      <div id="logList"><div style="color:#6b7fa8;font-size:12px;text-align:center;padding:1rem">Loading…</div></div>
     </div>
   </div>
 
@@ -213,7 +227,7 @@ async function fetchISS(){
     const cardDist = document.getElementById('cardDist');
     if(d.is_nearby){
       banner.className='alert-banner near';
-      alertText.textContent=`🚨 ISS is only ${Math.round(d.distance).toLocaleString()} km away! Look up at the sky over ${d.city}!`;
+      alertText.textContent=`ISS is only ${Math.round(d.distance).toLocaleString()} km away! Look up at the sky over ${d.city}!`;
       liveDot.className='live-dot alert';
       liveStatus.textContent='NEARBY';
       cardDist.className='metric alert-card';
@@ -235,11 +249,11 @@ async function fetchPasses(){
     const r = await fetch('/api/passes');
     const passes = await r.json();
     const tb = document.getElementById('passTable');
-    if(!passes.length){ tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--muted)">No passes in next 24h</td></tr>'; return; }
+    if(!passes.length){ tb.innerHTML='<tr><td colspan="3" style="text-align:center;color:#6b7fa8">No passes in next 24h</td></tr>'; return; }
     tb.innerHTML = passes.map((p,i) => `
       <tr class="${i===0?'next-row':''}">
         <td>${p.rise_pht}${i===0?' <span style="font-size:10px;color:var(--green)">← NEXT</span>':''}</td>
-        <td><span class="elev-bar" style="width:${Math.min(p.max_elev,90)/90*40}px"></span>${p.max_elev.toFixed(1)}°</td>
+        <td><span class="elev-bar" style="width:${Math.min(p.max_elev||0,90)/90*40}px"></span>${(+p.max_elev||0).toFixed(1)}°</td>
         <td>${p.duration}</td>
       </tr>`).join('');
   } catch(e){ console.error('Passes fetch error:', e); }
@@ -265,7 +279,6 @@ async function fetchAll(){
   await fetchLog();
 }
 
-// countdown timer
 let countdown = 60;
 setInterval(() => {
   countdown--;

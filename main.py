@@ -1,7 +1,7 @@
-# ── main.py ────────────────────────────────────────────────
+# main.py
+import monkey_patch  # MUST be first — fixes Python 3.13 + pyorbital round() bug
 """
-ISS Proximity Notifier
-─────────────────────
+ISS Proximity Notifier:
 Polls the ISS position every POLL_INTERVAL seconds.
 Saves each reading to SQLite.
 Fires a desktop alert when the ISS enters your alert radius.
@@ -19,7 +19,7 @@ from api_client   import get_iss_position
 from distance     import haversine
 from storage      import init_db, save_position, get_recent
 from notifier     import notify
-from predictor    import get_next_passes          # ← NEW
+from predictor    import get_next_passes
 
 
 def check_iss():
@@ -73,12 +73,12 @@ def main():
     print("=" * 50)
 
     init_db()
-    check_iss()          # run immediately on start
-    get_next_passes()    # ← NEW: show predicted passes on startup
+    check_iss()
+    get_next_passes()
 
     schedule.every(POLL_INTERVAL).seconds.do(check_iss)
     schedule.every(5).minutes.do(print_recent_log)
-    schedule.every(2).hours.do(get_next_passes)  # ← NEW: refresh every 2 hours
+    schedule.every(2).hours.do(get_next_passes)
 
     print(f"\nRunning… (Ctrl+C to stop)\n")
     try:
