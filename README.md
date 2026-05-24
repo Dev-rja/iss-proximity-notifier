@@ -71,27 +71,6 @@ POLL_INTERVAL   = 60      # seconds between each API call
 ```
 
 
-## Email Alerts (Gmail)
-
-The app sends an email alert when the ISS enters the 500 km alert radius. Set these environment variables to enable it:
-
-```bash
-GMAIL_USER         = your@gmail.com
-GMAIL_APP_PASSWORD = your16charapppassword   # from myaccount.google.com/apppasswords
-ALERT_EMAIL        = your@gmail.com
-```
-
-To get a Gmail app password, enable 2-Step Verification at myaccount.google.com/security, then go to myaccount.google.com/apppasswords and create one named "ISS Notifier".
-
-On Vercel, add these under Settings > Environment Variables. Locally, set them in PowerShell before running:
-
-```powershell
-$env:GMAIL_USER = "your@gmail.com"
-$env:GMAIL_APP_PASSWORD = "your16charapppassword"
-$env:ALERT_EMAIL = "your@gmail.com"
-```
-
-
 ## APIs Used
 
 | API | Purpose | Cost |
