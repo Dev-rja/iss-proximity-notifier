@@ -91,7 +91,7 @@ def log_data():
     rows = get_recent(20)
     return jsonify([{
         "timestamp": r[0], "latitude": r[1], "longitude": r[2],
-        "distance":  r[3], "is_nearby": bool(r[4])
+        "distance":  r[3], "is_nearby": r[4] in (1, "1", True)
     } for r in rows])
 
 if __name__ == "__main__":
