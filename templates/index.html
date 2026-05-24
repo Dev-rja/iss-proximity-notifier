@@ -233,17 +233,10 @@ L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/Worl
 }).addTo(map);
 
 // ISS marker
-const issIcon = L.divIcon({
-  className: '',
-  html: `<div style="
-    width:16px;height:16px;
-    background:#3b9eff;
-    border-radius:50%;
-    border:2px solid #fff;
-    box-shadow:0 0 0 3px rgba(59,158,255,0.4), 0 0 12px 4px rgba(59,158,255,0.6);
-  "></div>`,
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
+const issIcon = L.icon({
+  iconUrl: '/static/iss.png',
+  iconSize: [100, 60],
+  iconAnchor: [40, 25],
 });
 
 const cdoIcon = L.divIcon({
@@ -284,7 +277,6 @@ const trailLine = L.polyline([], {
 // Trail and label state
 const trailPoints = [];
 let trailPolyline = null;
-let issLabelMarker = null;
 
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
@@ -300,12 +292,6 @@ function updateMap(lat, lon) {
   trailPoints.push([lat, lon]);
   if (trailPoints.length > 60) trailPoints.shift();
   trailLine.setLatLngs(trailPoints);
-
-  // Update ISS label
-  if (issLabelMarker) map.removeLayer(issLabelMarker);
-  issLabelMarker = L.marker([lat, lon], {
-    icon: L.divIcon({ className: 'iss-label', html: 'ISS', iconAnchor: [-10, 4] })
-  }).addTo(map);
 }
 
 // All original JS unchanged below
