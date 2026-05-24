@@ -8,15 +8,14 @@ Then open: http://localhost:5000
 
 from flask import Flask, jsonify, render_template_string
 from datetime import datetime, timezone
-import sqlite3
 import os
 
 from api_client import get_iss_position
 from distance   import haversine
-from storage    import init_db, save_position
+from storage    import init_db, save_position, get_recent
 from predictor  import get_next_passes_data
 from mailer     import send_iss_alert
-from config     import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM, DB_FILE
+from config     import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM
 
 app = Flask(__name__)
 
@@ -69,7 +68,6 @@ def iss_data():
         _alert_sent = False
 
     _was_nearby = is_nearby
-    # ────────────────────────────────────────────────────────
 
     return jsonify({
         "latitude":  pos["latitude"],
@@ -90,16 +88,10 @@ def passes_data():
 
 @app.route("/api/log")
 def log_data():
-    conn = sqlite3.connect(DB_FILE)
-    rows = conn.execute("""
-        SELECT timestamp, latitude, longitude, altitude, velocity, distance, is_nearby
-        FROM iss_log ORDER BY id DESC LIMIT 20
-    """).fetchall()
-    conn.close()
+    rows = get_recent(20)
     return jsonify([{
         "timestamp": r[0], "latitude": r[1], "longitude": r[2],
-        "altitude":  r[3], "velocity": r[4], "distance":  r[5],
-        "is_nearby": bool(r[6])
+        "distance":  r[3], "is_nearby": bool(r[4])
     } for r in rows])
 
 if __name__ == "__main__":
