@@ -4,5 +4,14 @@
       "path": "/api/iss",
       "schedule": "0 0 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app.py": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "TURSO_DATABASE_URL": "@turso_database_url",
+    "TURSO_AUTH_TOKEN": "@turso_auth_token"
+  }
 }
