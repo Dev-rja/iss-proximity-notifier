@@ -9,11 +9,12 @@ Track the International Space Station in real-time and get notified when it flie
 
 - Live ISS tracking — polls position every 60 seconds
 - Gmail email alert — sends a notification when ISS enters 500 km radius
-- Vercel cron job — checks ISS position every 5 minutes automatically, no browser needed
+- cron-job.org — pings ISS API every minute automatically, no browser needed
+- Cloud database — position log stored in Turso (SQLite-compatible, hosted)
 - Web dashboard — dark mission-control UI
 - Orbital map — live ISS dot moving on a world map with trail
 - Pass predictor — shows next flyover times in Philippine Time (PHT)
-- SQLite logging — stores every position reading to a local database
+- Position logging — stores every position reading to Turso cloud database
 
 
 ## Setup
@@ -31,7 +32,6 @@ python main.py
 
 # 3b. Run web dashboard (recommended)
 python app.py
-# Then open http://localhost:5000 in your browser
 ```
 
 > **Note:** Requires Python 3.10–3.12. Python 3.13 has a known compatibility issue with `pyorbital` pass prediction.
@@ -46,13 +46,13 @@ iss-notifier/
 ├── api_client.py       <- calls the ISS REST API
 ├── predictor.py        <- ISS pass prediction (pyorbital)
 ├── distance.py         <- Haversine formula
-├── storage.py          <- SQLite logging
+├── storage.py          <- Turso cloud DB (SQLite locally)
 ├── notifier.py         <- desktop alert (Windows/Mac/Linux)
 ├── mailer.py           <- Gmail SMTP email alert
 ├── monkey_patch.py     <- Python 3.13 pyorbital compatibility fix
 ├── config.py           <- your city, coordinates & settings
 ├── requirements.txt    <- Python dependencies
-├── vercel.json         <- Vercel cron job config
+├── vercel.json         <- Vercel deployment config
 └── templates/
     └── index.html      <- web dashboard UI
 ```
@@ -96,7 +96,7 @@ POLL_INTERVAL   = 60      # seconds between each API call
 - Metric cards — distance, lat/lon, altitude, speed
 - Alert banner — turns red when ISS is within 500 km
 - Pass schedule — next flyovers over CDO in PHT
-- Position log — last 20 readings from the database
+- Position log — last 20 readings from Turso cloud database
 - Auto-refresh — updates every 60 seconds automatically
 
 
@@ -105,19 +105,19 @@ POLL_INTERVAL   = 60      # seconds between each API call
 - Polling a public REST API on a schedule
 - JSON parsing and data extraction
 - Geospatial math (Haversine formula)
-- SQLite database with Python's built-in `sqlite3`
+- Cloud database with Turso (SQLite-compatible, no Rust required)
 - Flask web server with REST API endpoints
 - Desktop and email notifications (cross-platform)
 - Orbital mechanics and TLE data (via `pyorbital`)
 - Pass prediction using real satellite data
 - Deploying a Python/Flask app to Vercel
-- Serverless cron jobs with Vercel
+- Automated scheduling with cron-job.org
 
 
 ## Dependencies
 
 ```
-requests     — HTTP calls to ISS API
+requests     — HTTP calls to ISS API and Turso HTTP API
 schedule     — polling interval scheduler
 pyorbital    — orbital mechanics & pass prediction
 flask        — web dashboard server
@@ -129,10 +129,10 @@ plyer        — cross-platform desktop notifications
 
 The web dashboard is deployed on Vercel as a serverless Flask app.
 
-- SQLite writes to `/tmp/iss_log.db` on Vercel (ephemeral, resets on cold start)
+- Position data is stored in **Turso** cloud database — persists across requests and cold starts
 - TLE data is fetched live from ARISS and CelesTrak on each request
-- A Vercel cron job calls `/api/iss` every 5 minutes automatically
-- Add `GMAIL_USER`, `GMAIL_APP_PASSWORD`, and `ALERT_EMAIL` under Vercel Environment Variables to enable email alerts
+- **cron-job.org** calls `/api/iss` every minute automatically — no visitor needed to keep the log fresh
+- Add the required environment variables (Gmail credentials, Turso database URL and auth token) under Vercel Environment Variables
 
 
 ## Verifying Accuracy

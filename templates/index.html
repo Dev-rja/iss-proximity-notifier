@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>ISS Proximity Notifier — Cagayan de Oro</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
   :root {
     --bg: #05070a; --bg2: #0a0f18; --border: #1a2a44;
@@ -39,22 +40,17 @@
   .mv.red { color: var(--red); text-shadow: 0 0 8px var(--red); }
   .mv.yellow { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
 
-  #worldMap { width: 100%; height: auto; display: block; border: 1px solid var(--border); background: #000; }
-
   .alert-banner { border: 2px solid var(--accent); background: rgba(0,0,0,0.8); padding: 15px; }
   .refresh-btn { border: 1px solid var(--accent); color: var(--accent); cursor: pointer; background: transparent; padding: 5px 15px; }
   .refresh-btn:hover { background: var(--accent); color: #000; }
 
-  /* TWO COLUMN LAYOUT */
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   @media(max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
 
-  /* SECTION TITLE + METRIC LABELS */
   .section-title { font-size: 10px; color: var(--accent); letter-spacing: .12em; margin-bottom: 12px; }
   .ml { font-size: 10px; color: #6b7fa8; letter-spacing: .08em; margin-bottom: 4px; }
   .mu { font-size: 10px; color: #6b7fa8; margin-top: 2px; }
 
-  /* PASSES TABLE */
   table { width: 100%; border-collapse: collapse; font-size: 11px; }
   th { color: var(--accent); font-weight: 400; text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: .08em; }
   td { padding: 6px 8px; border-bottom: 1px solid rgba(26,42,68,.6); color: #6b7fa8; }
@@ -62,7 +58,6 @@
   tr:last-child td { border-bottom: none; }
   .elev-bar { display: inline-block; height: 4px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; opacity: .7; }
 
-  /* POSITION LOG */
   .log-row { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(26,42,68,.6); font-size: 11px; }
   .log-row:last-child { border-bottom: none; }
   .log-ts { color: #6b7fa8; flex: 1; }
@@ -71,13 +66,27 @@
   .log-near.y { background: rgba(0,255,65,.12); color: var(--green); }
   .log-near.n { background: rgba(26,42,68,.6); color: #6b7fa8; }
 
-  /* HEADER BADGES */
   .countdown { font-size: 11px; color: #6b7fa8; }
   #nextRefresh { color: var(--accent); }
   .live-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #6b7fa8; }
   .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.4s ease-in-out infinite; }
   .live-dot.alert { background: var(--red); }
   @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+
+  /* ── Leaflet map overrides to match dark theme ── */
+  #map { width: 100%; height: 420px; border: 1px solid var(--border); }
+  .leaflet-container { background: #0a1628; font-family: var(--font-mono); }
+  .leaflet-control-zoom a { background: var(--bg2); color: var(--accent); border-color: var(--border); }
+  .leaflet-control-zoom a:hover { background: var(--border); }
+  .leaflet-control-attribution { background: rgba(5,7,10,0.8) !important; color: #6b7fa8 !important; font-size: 9px; }
+  .leaflet-control-attribution a { color: var(--accent) !important; }
+  .iss-label, .cdo-label {
+    background: transparent; border: none; box-shadow: none;
+    font-family: var(--font-mono); font-size: 9px; text-transform: uppercase;
+    white-space: nowrap; letter-spacing: 0.08em;
+  }
+  .iss-label { color: #3b9eff; }
+  .cdo-label { color: #22d3a0; }
 </style>
 </head>
 <body>
@@ -146,27 +155,10 @@
     </div>
   </div>
 
-  <!-- world map -->
+  <!-- world map — replaced SVG with Leaflet -->
   <div class="map-section">
     <div class="section-title">Live orbital track</div>
-    <svg id="worldMap" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" style="background:#0a1628;border-radius:8px">
-      <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
-      <line x1="400" y1="0" x2="400" y2="400" stroke="rgba(99,179,255,.1)" stroke-width="1"/>
-      <line x1="0" y1="100" x2="800" y2="100" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
-      <line x1="0" y1="300" x2="800" y2="300" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
-      <line x1="200" y1="0" x2="200" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
-      <line x1="600" y1="0" x2="600" y2="400" stroke="rgba(99,179,255,.05)" stroke-width=".5"/>
-      <text x="6" y="197" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">0°</text>
-      <text x="6" y="22" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°N</text>
-      <text x="6" y="394" font-size="9" fill="rgba(99,179,255,.4)" font-family="Space Mono">90°S</text>
-      <polyline id="trailLine" points="" fill="none" stroke="#3b9eff" stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>
-      <circle id="cdoRadius" cx="0" cy="0" r="0" fill="none" stroke="#22d3a0" stroke-width="1" stroke-dasharray="4 3" opacity="0"/>
-      <circle id="cdoDot" cx="0" cy="0" r="0" fill="#22d3a0" opacity="0"/>
-      <text id="cdoLabel" x="0" y="0" font-size="9" fill="#22d3a0" font-family="Space Mono" opacity="0">CDO</text>
-      <circle id="issDot" cx="400" cy="200" r="0" fill="#3b9eff" opacity="0"/>
-      <circle id="issGlow" cx="400" cy="200" r="0" fill="none" stroke="#3b9eff" stroke-width="1" opacity="0"/>
-      <text id="issLabel" x="0" y="0" font-size="9" fill="#3b9eff" font-family="Space Mono" opacity="0">ISS</text>
-    </svg>
+    <div id="map"></div>
   </div>
 
   <!-- passes + log -->
@@ -186,30 +178,101 @@
 
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const trail = [];
+// Leaflet map setup
+const map = L.map('map', {
+  center: [20, 0],
+  zoom: 2,
+  minZoom: 2,
+  maxZoom: 6,
+  worldCopyJump: true,
+  zoomControl: true,
+});
 
-function toSVG(lat, lon){ return { x: ((lon+180)/360)*800, y: ((90-lat)/180)*400 }; }
+// First tile layer — satellite imagery
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles © Esri — Source: Esri, USGS, NOAA',
+  maxZoom: 18,
+  noWrap: false,
+}).addTo(map);
 
-function updateMap(lat, lon){
-  const p = toSVG(lat, lon);
-  const c = toSVG(8.4822, 124.6472);
-  trail.push(p); if(trail.length > 60) trail.shift();
-  document.getElementById('trailLine').setAttribute('points', trail.map(t=>t.x+','+t.y).join(' '));
-  const id = document.getElementById('issDot');
-  id.setAttribute('cx',p.x); id.setAttribute('cy',p.y); id.setAttribute('r','5'); id.setAttribute('opacity','1');
-  const ig = document.getElementById('issGlow');
-  ig.setAttribute('cx',p.x); ig.setAttribute('cy',p.y); ig.setAttribute('r','10'); ig.setAttribute('opacity','0.4');
-  const il = document.getElementById('issLabel');
-  il.setAttribute('x',p.x+8); il.setAttribute('y',p.y+4); il.setAttribute('opacity','1');
-  const cd = document.getElementById('cdoDot');
-  cd.setAttribute('cx',c.x); cd.setAttribute('cy',c.y); cd.setAttribute('r','4'); cd.setAttribute('opacity','1');
-  const cl = document.getElementById('cdoLabel');
-  cl.setAttribute('x',c.x+6); cl.setAttribute('y',c.y-6); cl.setAttribute('opacity','1');
-  const cr = document.getElementById('cdoRadius');
-  cr.setAttribute('cx',c.x); cr.setAttribute('cy',c.y); cr.setAttribute('r', ((500/20015)*800).toFixed(1)); cr.setAttribute('opacity','0.5');
+// Second tile layer — labels on top
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+  attribution: '',
+  maxZoom: 18,
+  noWrap: false,
+  opacity: 0.6,
+}).addTo(map);
+
+// ISS marker
+const issIcon = L.divIcon({
+  className: '',
+  html: `<div style="
+    width:16px;height:16px;
+    background:#3b9eff;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 0 0 3px rgba(59,158,255,0.4), 0 0 12px 4px rgba(59,158,255,0.6);
+  "></div>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+const cdoIcon = L.divIcon({
+  className: '',
+  html: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+    <circle cx="6" cy="6" r="4" fill="#22d3a0"/>
+    <circle cx="6" cy="6" r="6" fill="none" stroke="#22d3a0" stroke-width="0.8" opacity="0.5"/>
+  </svg>`,
+  iconSize: [12, 12],
+  iconAnchor: [6, 6],
+});
+
+const issMarker = L.marker([0, 0], { icon: issIcon }).addTo(map);
+const cdoMarker = L.marker([8.4822, 124.6472], { icon: cdoIcon }).addTo(map);
+
+// CDO label
+L.marker([8.4822, 124.6472], {
+  icon: L.divIcon({ className: 'cdo-label', html: 'CDO', iconAnchor: [-8, 4] })
+}).addTo(map);
+
+// CDO alert radius circle
+const cdoCircle = L.circle([8.4822, 124.6472], {
+  radius: 500000, // 500 km in meters
+  color: '#22d3a0',
+  weight: 1,
+  dashArray: '4 4',
+  fill: false,
+  opacity: 0.4,
+}).addTo(map);
+
+// Orbital trail
+const trailLine = L.polyline([], {
+  color: '#00ff41',
+  weight: 2.5,
+  opacity: 0.9,
+}).addTo(map);
+
+// ISS label that follows the marker
+let issLabelMarker = null;
+
+function updateMap(lat, lon) {
+  issMarker.setLatLng([lat, lon]);
+
+  // Update trail
+  trailPoints.push([lat, lon]);
+  if (trailPoints.length > 60) trailPoints.shift();
+  trailLine.setLatLngs(trailPoints);
+
+  // Update ISS label
+  if (issLabelMarker) map.removeLayer(issLabelMarker);
+  issLabelMarker = L.marker([lat, lon], {
+    icon: L.divIcon({ className: 'iss-label', html: 'ISS', iconAnchor: [-10, 4] })
+  }).addTo(map);
 }
 
+// All original JS unchanged below
 async function fetchISS(){
   try {
     const r = await fetch('/api/iss');
