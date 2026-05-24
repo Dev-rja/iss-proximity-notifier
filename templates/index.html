@@ -262,7 +262,14 @@ let issLabelMarker = null;
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
 
-  // Update trail
+  // Clear trail if ISS crosses the dateline (jumps more than 180°)
+  if (trailPoints.length > 0) {
+    const lastLon = trailPoints[trailPoints.length - 1][1];
+    if (Math.abs(lon - lastLon) > 180) {
+      trailPoints.length = 0; // clear trail on dateline crossing
+    }
+  }
+
   trailPoints.push([lat, lon]);
   if (trailPoints.length > 60) trailPoints.shift();
   trailLine.setLatLngs(trailPoints);
