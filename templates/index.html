@@ -254,7 +254,9 @@ const trailLine = L.polyline([], {
   opacity: 0.9,
 }).addTo(map);
 
-// ISS label that follows the marker
+// Trail and label state
+const trailPoints = [];
+let trailPolyline = null;
 let issLabelMarker = null;
 
 function updateMap(lat, lon) {
