@@ -4,10 +4,5 @@
       "path": "/api/iss",
       "schedule": "0 0 * * *"
     }
-  ],
-  "functions": {
-    "app.py": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
