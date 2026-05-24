@@ -11,6 +11,7 @@ builtins.round = _safe_round
 from datetime import datetime, timezone, timedelta
 from pyorbital.orbital import Orbital
 import urllib.request
+import math
 
 from config import MY_CITY, MY_LAT, MY_LON
 
@@ -50,11 +51,6 @@ def get_orb():
 
 
 def get_max_elev(orb, max_elev_dt):
-    """
-    In Python 3.13 + pyorbital, max_elev is returned as a datetime (bug).
-    That datetime IS the time of peak elevation.
-    Use get_observer_look at that time and take abs() of elevation.
-    """
     try:
         az, el = orb.get_observer_look(max_elev_dt, MY_LON, MY_LAT, MY_ALT)
         return round(abs(float(el)), 1)
@@ -85,7 +81,7 @@ def get_next_passes():
 
 
 def get_next_passes_data():
-    """Return passes as list of dicts for web dashboard."""
+    """Return visible passes as list of dicts for web dashboard."""
     try:
         orb = get_orb()
         now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -107,4 +103,77 @@ def get_next_passes_data():
         return result
     except Exception as e:
         print(f"  [PREDICT] get_next_passes_data error: {e}")
+        return []
+
+
+def _haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    d_lat = math.radians(lat2 - lat1)
+    d_lon = math.radians(lon2 - lon1)
+    a = math.sin(d_lat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(d_lon/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+
+def get_proximity_passes_data(radius_km=500):
+    """
+    Scan next 24 hours in 30s steps.
+    Find windows where ISS ground track is within radius_km of CDO.
+    Returns list of dicts with entry/closest/exit times and min distance.
+    """
+    try:
+        from sgp4.api import Satrec, jday
+        l1, l2 = fetch_tle()
+        if not l1:
+            return []
+        sat = Satrec.twoline2rv(l1, l2)
+
+        now = datetime.now(timezone.utc)
+        end = now + timedelta(hours=LOOK_AHEAD_HOURS)
+        step = timedelta(seconds=30)
+
+        results = []
+        in_pass = False
+        pass_start = None
+        pass_min_dist = float("inf")
+        pass_min_time = None
+        t = now
+
+        while t <= end:
+            jd, fr = jday(t.year, t.month, t.day, t.hour, t.minute, t.second + t.microsecond/1e6)
+            e, r, _ = sat.sgp4(jd, fr)
+            if e == 0:
+                x, y, z = r
+                lon = math.degrees(math.atan2(y, x))
+                hyp = math.sqrt(x**2 + y**2)
+                lat = math.degrees(math.atan2(z, hyp))
+                dist = _haversine(MY_LAT, MY_LON, lat, lon)
+
+                if dist < radius_km:
+                    if not in_pass:
+                        in_pass = True
+                        pass_start = t
+                        pass_min_dist = dist
+                        pass_min_time = t
+                    elif dist < pass_min_dist:
+                        pass_min_dist = dist
+                        pass_min_time = t
+                else:
+                    if in_pass:
+                        in_pass = False
+                        duration_sec = int((t - pass_start).total_seconds())
+                        results.append({
+                            "entry_pht":   (pass_start + timedelta(hours=8)).strftime("%b %d %H:%M:%S"),
+                            "closest_pht": (pass_min_time + timedelta(hours=8)).strftime("%b %d %H:%M:%S"),
+                            "min_dist":    round(pass_min_dist),
+                            "duration":    f"{duration_sec//60}m {duration_sec%60}s",
+                        })
+            t += step
+
+        return results[:6]
+
+    except ImportError:
+        print("  [PREDICT] sgp4 not installed — run: pip install sgp4")
+        return []
+    except Exception as e:
+        print(f"  [PREDICT] get_proximity_passes_data error: {e}")
         return []

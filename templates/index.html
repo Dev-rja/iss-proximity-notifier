@@ -187,11 +187,19 @@
     <div class="section-title">Live orbital track</div>
     <div id="map"></div>
   </div>
+  
+  <div class="panel">
+    <div class="section-title">ISS within 500 km of CDO — next 24h</div>
+    <table>
+      <thead><tr><th>Entry Time (PHT)</th><th>Closest (PHT)</th><th>Min Dist</th><th>Duration</th></tr></thead>
+      <tbody id="proximityTable"><tr><td colspan="4" style="text-align:center;padding:1rem">Calculating…</td></tr></tbody>
+    </table>
+  </div>
 
   <!-- passes + log -->
   <div class="two-col">
     <div class="panel">
-      <div class="section-title">Upcoming passes over CDO</div>
+      <div class="section-title">ISS Above Horizon</div>
       <table>
         <thead><tr><th>Rise Time (PHT)</th><th>Max Elev</th><th>Duration</th></tr></thead>
         <tbody id="passTable"><tr><td colspan="3" style="text-align:center;padding:1rem">Loading…</td></tr></tbody>
@@ -358,9 +366,26 @@ async function fetchLog(){
   } catch(e){ console.error('Log fetch error:', e); }
 }
 
+async function fetchProximity(){
+  try {
+    const r = await fetch('/api/proximity');
+    const passes = await r.json();
+    const tb = document.getElementById('proximityTable');
+    if(!passes.length){ tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:#6b7fa8">No passes within 500 km in next 24h</td></tr>'; return; }
+    tb.innerHTML = passes.map((p,i) => `
+      <tr class="${i===0?'next-row':''}">
+        <td>${p.entry_pht}${i===0?' <span style="font-size:10px;color:var(--green)">← NEXT</span>':''}</td>
+        <td>${p.closest_pht}</td>
+        <td style="color:var(--red)">${p.min_dist} km</td>
+        <td>${p.duration}</td>
+      </tr>`).join('');
+  } catch(e){ console.error('Proximity fetch error:', e); }
+}
+
 async function fetchAll(){
   await fetchISS();
   await fetchPasses();
+  await fetchProximity()
   await fetchLog();
 }
 

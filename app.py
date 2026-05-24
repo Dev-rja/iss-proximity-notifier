@@ -13,17 +13,15 @@ import os
 from api_client import get_iss_position
 from distance   import haversine
 from storage    import init_db, save_position, get_recent
-from predictor  import get_next_passes_data
+from predictor  import get_next_passes_data, get_proximity_passes_data
 from mailer     import send_iss_alert
 from config     import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM
 
 app = Flask(__name__)
 
 # Alert cooldown
-# Prevents sending duplicate emails during the same pass.
-# Resets when ISS leaves the alert radius.
-_alert_sent    = False   # was alert sent for the current pass?
-_was_nearby    = False   # was ISS nearby on the previous poll?
+_alert_sent = False
+_was_nearby = False
 
 # HTML template
 HTML = open("templates/index.html", encoding="utf-8").read()
@@ -49,9 +47,7 @@ def iss_data():
         dist, is_nearby
     )
 
-    # Email alert logic
     if is_nearby and not _alert_sent:
-        # ISS just entered the radius — send one alert
         success = send_iss_alert(
             distance_km = dist,
             latitude    = pos["latitude"],
@@ -64,7 +60,6 @@ def iss_data():
             _alert_sent = True
 
     elif not is_nearby and _was_nearby:
-        # ISS left the radius — reset so next pass triggers a new alert
         _alert_sent = False
 
     _was_nearby = is_nearby
@@ -83,8 +78,11 @@ def iss_data():
 
 @app.route("/api/passes")
 def passes_data():
-    passes = get_next_passes_data()
-    return jsonify(passes)
+    return jsonify(get_next_passes_data())
+
+@app.route("/api/proximity")
+def proximity_data():
+    return jsonify(get_proximity_passes_data())
 
 @app.route("/api/log")
 def log_data():
