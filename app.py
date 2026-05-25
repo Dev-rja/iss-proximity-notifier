@@ -29,7 +29,13 @@ HTML = open("templates/index.html", encoding="utf-8").read()
 
 @app.route("/")
 def index():
-    return render_template_string(HTML, alert_radius=ALERT_RADIUS_KM, proximity_radius=PROXIMITY_RADIUS)
+    return render_template_string(HTML, 
+    alert_radius=ALERT_RADIUS_KM, 
+    proximity_radius=PROXIMITY_RADIUS, 
+    city=MY_CITY,
+    lat=MY_LAT,
+    lon=MY_LON
+)
 
 @app.route("/api/iss")
 def iss_data():
