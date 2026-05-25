@@ -143,9 +143,16 @@ def get_proximity_passes_data(radius_km=500):
             e, r, _ = sat.sgp4(jd, fr)
             if e == 0:
                 x, y, z = r
-                lon = math.degrees(math.atan2(y, x))
-                hyp = math.sqrt(x**2 + y**2)
-                lat = math.degrees(math.atan2(z, hyp))
+                # Apply GMST rotation to convert TEME → ECEF → lat/lon
+                T = (jd + fr - 2451545.0) / 36525.0
+                gmst = 280.46061837 + 360.98564736629 * (jd + fr - 2451545.0) + T*T*(0.000387933 - T/38710000)
+                gmst = math.radians(gmst % 360)
+                x_ecef =  x * math.cos(gmst) + y * math.sin(gmst)
+                y_ecef = -x * math.sin(gmst) + y * math.cos(gmst)
+                z_ecef = z
+                lon = math.degrees(math.atan2(y_ecef, x_ecef))
+                hyp = math.sqrt(x_ecef**2 + y_ecef**2)
+                lat = math.degrees(math.atan2(z_ecef, hyp))
                 dist = _haversine(MY_LAT, MY_LON, lat, lon)
 
                 if dist < radius_km:

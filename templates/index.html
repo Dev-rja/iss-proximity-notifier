@@ -171,7 +171,7 @@
     </div>
     <div class="metric">
       <div class="ml">Alert Radius</div>
-      <div class="mv" style="color:#6b7fa8">500</div>
+      <div class="mv" style="color:#6b7fa8">{{ alert_radius }}</div>
       <div class="mu">km threshold</div>
     </div>
   </div>
@@ -182,7 +182,7 @@
   </div>
 
   <div class="panel">
-    <div class="section-title">ISS within 500 km of CDO — next 24h</div>
+    <div class="section-title">ISS within {{ proximity_radius }} km of CDO — next 24h</div>
     <table>
       <thead><tr><th>Entry Time (PHT)</th><th>Closest (PHT)</th><th>Min Dist</th><th>Duration</th></tr></thead>
       <tbody id="proximityTable"><tr><td colspan="4" style="text-align:center;padding:1rem">Calculating…</td></tr></tbody>
