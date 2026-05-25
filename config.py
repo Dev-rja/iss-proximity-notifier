@@ -5,10 +5,10 @@ MY_LAT  = 8.4822
 MY_LON  = 124.6472
 
 # Alert when ISS is within this many kilometers
-ALERT_RADIUS_KM = 10000
+ALERT_RADIUS_KM = 2000
 
 # Proximity panel display radius (wider, for awareness)
-PROXIMITY_RADIUS = 1500
+PROXIMITY_RADIUS = 1000
 
 # How often to check (in seconds)
 POLL_INTERVAL = 60
