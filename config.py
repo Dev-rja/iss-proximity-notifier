@@ -8,7 +8,7 @@ MY_LON  = 124.6472
 ALERT_RADIUS_KM = 2000
 
 # Proximity panel display radius (wider, for awareness)
-PROXIMITY_RADIUS = 1000
+PROXIMITY_RADIUS = 2000
 
 # How often to check (in seconds)
 POLL_INTERVAL = 60
