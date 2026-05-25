@@ -1,6 +1,6 @@
 # ISS Proximity Notifier
 
-Track the International Space Station in real-time and get notified when it flies over **Cagayan de Oro, Philippines**. Includes a live web dashboard with orbital map, pass predictions, position logging, and automatic email alerts.
+Track the International Space Station in real-time and receive notifications when it flies over a configured city. Includes a live web dashboard with orbital map, pass predictions, position logging, and automatic email alerts.
 
 **Live demo:** https://iss-proximity-notifier.vercel.app/
 
@@ -13,9 +13,21 @@ Track the International Space Station in real-time and get notified when it flie
 - Cloud database — position log stored in Turso (SQLite-compatible, hosted)
 - Web dashboard — dark mission-control UI
 - Orbital map — live ISS image marker moving on a satellite world map with trail
-- ISS proximity panel — shows when ISS will be within your proximity radius
-- Pass predictor — shows when ISS is visible above the horizon in PHT
-- Position logging — stores every position reading to Turso cloud database
+- ISS proximity panel — shows when ISS will be within the configured proximity radius
+- Pass predictor — shows when ISS is visible above the horizon in local time
+- Position logging — stores every position reading to the database
+
+
+## Local vs Deployed
+
+**Running locally (simplest):**
+Clone the project, set Gmail credentials in a `.env` file, and run `python app.py` or `python main.py`. Email alerts and the web dashboard work as long as the script is running. No Vercel or Turso needed.
+
+**Deploying to Vercel (24/7):**
+Deploy to Vercel + set up Turso + cron-job.org for fully autonomous tracking and alerts even when the machine is off. See the Deployment section below.
+
+**Just viewing the live tracker:**
+Visit https://iss-proximity-notifier.vercel.app — no setup needed.
 
 
 ## Setup
@@ -28,11 +40,14 @@ cd iss-notifier
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3a. Run terminal tracker only
+# 3. Create a .env file with Gmail credentials (see Gmail SMTP Setup)
+
+# 4a. Run terminal tracker only
 python main.py
 
-# 3b. Run web dashboard (recommended)
+# 4b. Run web dashboard (recommended)
 python app.py
+# Then open http://localhost:5000
 ```
 
 > **Note:** Requires Python 3.10–3.12. Python 3.13 has a known compatibility issue with `pyorbital` pass prediction.
@@ -43,21 +58,21 @@ python app.py
 All settings are in `config.py`:
 
 ```python
-# Your city and coordinates
-MY_CITY         = "Cagayan de Oro"   # change to your city
-MY_LAT          = 8.4822             # your latitude
-MY_LON          = 124.6472           # your longitude
+# Target city and coordinates
+MY_CITY         = "Cagayan de Oro"   # set to the target city name
+MY_LAT          = 8.4822             # latitude of the target city
+MY_LON          = 124.6472           # longitude of the target city
 
 # Email alert radius — how close the ISS must be to trigger an email
 # Recommended values:
-#   500  km — CDO area only, triggers a few times per week
-#   1000 km — entire Philippines, triggers once or twice daily
-#   1500 km — Philippines + nearby countries, triggers 3-5 times daily
+#   500  km — city area only, triggers a few times per week
+#   1000 km — regional coverage, triggers once or twice daily
+#   1500 km — country-wide coverage, triggers 3-5 times daily
 ALERT_RADIUS_KM = 500
 
-# Proximity panel radius — what distance to show in the dashboard panel
-# This is wider than ALERT_RADIUS_KM so you can see upcoming passes
-# even before they trigger an alert
+# Proximity panel radius — distance shown in the dashboard panel
+# Set wider than ALERT_RADIUS_KM to see upcoming passes
+# before they trigger an alert
 PROXIMITY_RADIUS = 1500
 
 # How often to poll the ISS API (in seconds)
@@ -67,14 +82,14 @@ POLL_INTERVAL = 60
 DB_FILE = "iss_log.db"
 ```
 
-To watch a different city, update `MY_CITY`, `MY_LAT`, and `MY_LON` with your coordinates. You can find your coordinates at https://latlong.net
+To track a different city, update `MY_CITY`, `MY_LAT`, and `MY_LON` with the target coordinates. Coordinates can be found at https://latlong.net
 
 
 ## Gmail SMTP Setup
 
 The project sends email alerts via Gmail. To enable this:
 
-**Step 1 — Enable 2-Factor Authentication on your Google account**
+**Step 1 — Enable 2-Factor Authentication**
 Go to https://myaccount.google.com/security and enable 2-Step Verification.
 
 **Step 2 — Create an App Password**
@@ -82,16 +97,16 @@ Go to https://myaccount.google.com/security and enable 2-Step Verification.
 - Select app: **Mail**, device: **Other** (name it "ISS Notifier")
 - Copy the 16-character password generated
 
-**Step 3 — Set environment variables**
-
-For local use, create a `.env` file or set them in your terminal:
-```bash
-GMAIL_USER=your.email@gmail.com
-GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx   # the 16-char app password
-ALERT_EMAIL=recipient@email.com          # who receives the alert
+**Step 3 — Create a `.env` file in the project root**
+```
+GMAIL_USER=sender@gmail.com
+GMAIL_APP_PASSWORD=...
+ALERT_EMAIL=recipient@email.com
 ```
 
-For Vercel deployment, add these under **Settings → Environment Variables**:
+> **Important:** The `.env` file is listed in `.gitignore` and must never be committed to GitHub.
+
+**For Vercel deployment**, add these under **Settings → Environment Variables** instead of using a `.env` file:
 ```
 GMAIL_USER
 GMAIL_APP_PASSWORD
@@ -100,7 +115,42 @@ TURSO_DATABASE_URL
 TURSO_AUTH_TOKEN
 ```
 
-> **Note:** Never commit your Gmail credentials to GitHub. Use environment variables only.
+
+## Deployment (Vercel + Turso + cron-job.org)
+
+Follow these steps for a fully autonomous 24/7 deployment:
+
+**Step 1 — Deploy to Vercel**
+- Push the repo to GitHub
+- Go to https://vercel.com and import the repository
+- Vercel will auto-detect the Flask app and deploy it
+
+**Step 2 — Set up Turso (cloud database)**
+- Go to https://app.turso.tech and create a free account
+- Create a new database named `iss-notifier`
+- Click **Create Token** (Read & Write, Never expires)
+- Copy the **Database URL** and **Auth Token**
+- Add them to Vercel Environment Variables:
+
+
+**Step 3 — Set up cron-job.org (auto-ping)**
+- Go to https://cron-job.org and create a free account
+- Create a new cronjob:
+  - URL: `https://your-app.vercel.app/api/iss`
+  - Schedule: every 1 minute
+- This keeps the position log updating 24/7 even when no one visits the site
+
+**Step 4 — Add all environment variables to Vercel**
+```
+GMAIL_USER
+GMAIL_APP_PASSWORD
+ALERT_EMAIL
+TURSO_DATABASE_URL
+TURSO_AUTH_TOKEN
+```
+
+**Step 5 — Redeploy**
+Push any change to GitHub and Vercel will redeploy automatically.
 
 
 ## Project Structure
@@ -116,9 +166,10 @@ iss-notifier/
 ├── notifier.py         <- desktop alert (Windows/Mac/Linux)
 ├── mailer.py           <- Gmail SMTP email alert
 ├── monkey_patch.py     <- Python 3.13 pyorbital compatibility fix
-├── config.py           <- your city, coordinates & settings
+├── config.py           <- target city, coordinates & settings
 ├── requirements.txt    <- Python dependencies
 ├── vercel.json         <- Vercel deployment config
+├── .env                <- local credentials (never commit this)
 └── templates/
     ├── index.html      <- web dashboard UI
     └── static/
@@ -135,25 +186,14 @@ iss-notifier/
 | [celestrak.org](https://celestrak.org) | Fallback TLE source | Free |
 
 
-## Web Dashboard Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | Main dashboard UI |
-| `GET /api/iss` | Live ISS position, altitude, velocity, distance |
-| `GET /api/passes` | Next ISS passes above the horizon in PHT |
-| `GET /api/proximity` | Next ISS passes within proximity radius in PHT |
-| `GET /api/log` | Last 20 position readings from the database |
-
-
 ## Web Dashboard Features
 
 - Live orbital track — ISS image moving on satellite world map with trail
 - Metric cards — distance, lat/lon, altitude, speed, alert radius
 - Alert banner — turns red when ISS is within alert radius
 - ISS proximity panel — exact entry/closest/exit times within proximity radius
-- Pass schedule — when ISS is visible above the horizon from CDO
-- Position log — last 20 readings from Turso cloud database
+- Pass schedule — when ISS is visible above the horizon from the target city
+- Position log — last 20 readings from the database
 - Auto-refresh — updates every 60 seconds automatically
 
 
@@ -174,30 +214,21 @@ iss-notifier/
 ## Dependencies
 
 ```
-requests     — HTTP calls to ISS API and Turso HTTP API
-schedule     — polling interval scheduler
-pyorbital    — orbital mechanics & pass prediction
-sgp4         — precise proximity pass scanning
-flask        — web dashboard server
-plyer        — cross-platform desktop notifications
+requests         — HTTP calls to ISS API and Turso HTTP API
+schedule         — polling interval scheduler
+pyorbital        — orbital mechanics & pass prediction
+sgp4             — precise proximity pass scanning
+flask            — web dashboard server
+plyer            — cross-platform desktop notifications
+python-dotenv    — loads .env file for local credential management
 ```
-
-
-## Deployment (Vercel)
-
-The web dashboard is deployed on Vercel as a serverless Flask app.
-
-- Position data is stored in **Turso** cloud database — persists across requests and cold starts
-- TLE data is fetched live from ARISS and CelesTrak on each request
-- **cron-job.org** calls `/api/iss` every minute automatically — no visitor needed to keep the log fresh
-- Add all required environment variables under Vercel **Settings → Environment Variables**
 
 
 ## Verifying Accuracy
 
-Cross-check your tracker against the live map at https://wheretheiss.at
+Cross-check the tracker against the live map at https://wheretheiss.at
 
-The ISS travels at ~27,600 km/h so coordinates may differ slightly between your fetch and the website due to time elapsed between requests.
+The ISS travels at ~27,600 km/h so coordinates may differ slightly between fetches due to time elapsed between requests.
 
 
 Built as a **Public REST API Ingestion** project — polling, parsing, storing, and visualizing real-time satellite data.

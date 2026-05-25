@@ -8,7 +8,8 @@ Fires a desktop alert when the ISS enters your alert radius.
 
 Run:  python main.py
 """
-
+from dotenv import load_dotenv
+load_dotenv()
 import time
 from datetime import datetime, timezone
 

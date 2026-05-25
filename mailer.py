@@ -12,13 +12,14 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-GMAIL_USER         = os.environ.get("GMAIL_USER", "")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
-ALERT_EMAIL        = os.environ.get("ALERT_EMAIL", "")
-
-
 def send_iss_alert(distance_km: float, latitude: float, longitude: float,
                    altitude: float, velocity: float, city: str) -> bool:
+    
+    # Read here so load_dotenv() is already called
+    GMAIL_USER         = os.environ.get("GMAIL_USER", "")
+    GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+    ALERT_EMAIL        = os.environ.get("ALERT_EMAIL", "")
+    
     """
     Send ISS proximity alert email via Gmail SMTP.
     Returns True if sent successfully, False otherwise.
