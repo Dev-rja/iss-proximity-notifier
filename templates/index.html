@@ -83,8 +83,8 @@
   .leaflet-control-attribution a { color: var(--accent) !important; }
   .iss-label, .cdo-label {
     background: transparent; border: none; box-shadow: none;
-    font-family: var(--font-mono); font-size: 9px; text-transform: uppercase;
-    white-space: nowrap; letter-spacing: 0.08em;
+    font-family: var(--font-mono); font-size: 7px; text-transform: uppercase;
+    white-space: nowrap; letter-spacing: 0.04em;
   }
   .iss-label { color: #3b9eff; }
   .cdo-label { color: #22d3a0; }
@@ -145,7 +145,7 @@
 
   <div class="metrics">
     <div class="metric" id="cardDist">
-      <div class="ml">Distance to {{ city }}</div>
+      <div class="ml">Dist. to {{ city }}</div>
       <div class="mv blue" id="mDist">—</div>
       <div class="mu">kilometers</div>
     </div>
@@ -241,7 +241,7 @@ const cdoMarker = L.marker([{{ lat }}, {{ lon }}], { icon: cdoIcon }).addTo(map)
 
 // city label
 L.marker([{{ lat }}, {{ lon }}], {
-  icon: L.divIcon({ className: 'cdo-label', html: '{{ city[:3]|upper }}', iconAnchor: [-8, 4] })
+  icon: L.divIcon({ className: 'cdo-label', html: '{{ city }}', iconAnchor: [-8, 4] })
 }).addTo(map);
 
 // city circle
