@@ -355,7 +355,23 @@ setInterval(() => {
   if(countdown <= 0){ countdown = 60; fetchAll(); }
 }, 1000);
 
-fetchAll();
+// Load persistent trail from DB on startup, then fetch live data
+async function loadTrail(){
+  try {
+    const rows = await fetch('/api/trail').then(r => r.json());
+    rows.forEach(p => {
+      if (trailPoints.length > 0) {
+        const lastLon = trailPoints[trailPoints.length - 1][1];
+        if (Math.abs(p.lon - lastLon) > 180) trailPoints.length = 0;
+      }
+      trailPoints.push([p.lat, p.lon]);
+    });
+    trailLine.setLatLngs(trailPoints);
+  } catch(e){ console.error('Trail load error:', e); }
+}
+
+loadTrail().then(() => fetchAll());
+
 </script>
 </body>
 </html>

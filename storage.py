@@ -111,3 +111,18 @@ def get_recent(limit=20):
         rows = conn.execute(sql, (limit,)).fetchall()
         conn.close()
         return rows
+ 
+    
+def get_trail(limit=60):
+    """Fetch the last N positions for the orbital trail."""
+    sql = "SELECT latitude, longitude FROM iss_log ORDER BY id DESC LIMIT ?"
+    if USE_TURSO:
+        turso_execute(CREATE_TABLE_SQL)
+        rows = turso_query(sql, [limit])
+    else:
+        conn = sqlite3.connect(_DB)
+        conn.execute(CREATE_TABLE_SQL)
+        rows = conn.execute(sql, (limit,)).fetchall()
+        conn.close()
+    # Reverse so oldest first (trail draws in correct direction)
+    return list(reversed(rows))

@@ -93,6 +93,12 @@ def log_data():
         "distance":  r[3], "is_nearby": r[4] in (1, "1", True)
     } for r in rows])
 
+@app.route("/api/trail")
+def trail_data():
+    from storage import get_trail
+    rows = get_trail(60)
+    return jsonify([{"lat": r[0], "lon": r[1]} for r in rows])
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, port=5000)
