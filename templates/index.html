@@ -14,7 +14,6 @@
     --text: #c5d0e0; --font-hd: 'Syne', sans-serif; --font-mono: 'Space Mono', monospace;
   }
 
-  /* CRT Scanline Overlay */
   body::after {
     content: " "; position: fixed; inset: 0; pointer-events: none; z-index: 10;
     background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%),
@@ -22,57 +21,33 @@
     background-size: 100% 4px, 3px 100%;
   }
 
+  * { box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: var(--font-mono); text-transform: uppercase; margin: 0; padding: 20px; }
-
   .wrap { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
 
-  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
+  header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 20px; flex-wrap: wrap; gap: 12px; }
   .logo { display: flex; align-items: center; gap: 15px; }
   .logo-icon { width: 40px; height: 40px; flex-shrink: 0; }
   .logo-icon svg { width: 100%; height: 100%; display: block; }
   h1 { font-family: var(--font-hd); margin: 0; font-size: 1.5rem; letter-spacing: -1px; }
+  .header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 
   .panel, .metric, .map-section { background: var(--bg2); border: 1px solid var(--border); padding: 15px; border-radius: 0; }
 
-  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 4px; }
+  .metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
   .metric { border-left: 4px solid var(--accent); }
   .mv { font-size: 1.6rem; font-weight: 700; color: #fff; text-shadow: 0 0 5px var(--accent); }
   .mv.green { color: var(--green); text-shadow: 0 0 8px var(--green); }
   .mv.red { color: var(--red); text-shadow: 0 0 8px var(--red); }
   .mv.yellow { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
 
-  .alert-banner { border: 2px solid var(--accent); background: rgba(0,0,0,0.8); padding: 15px; }
-  .refresh-btn { border: 1px solid var(--accent); color: var(--accent); cursor: pointer; background: transparent; padding: 5px 15px; }
+  .alert-banner { border: 2px solid var(--accent); background: rgba(0,0,0,0.8); padding: 15px; font-size: 12px; }
+  .alert-banner.near { border-color: var(--red); color: var(--red); }
+
+  .refresh-btn { border: 1px solid var(--accent); color: var(--accent); cursor: pointer; background: transparent; padding: 5px 15px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; position: relative; z-index: 20; }
   .refresh-btn:hover { background: var(--accent); color: #000; }
 
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  @media(max-width: 768px) {
-  body { padding: 10px; }
-  
-  header { flex-direction: column; align-items: flex-start; gap: 10px; }
-  
-  h1 { font-size: 1.1rem; }
-  
-  .metrics { grid-template-columns: repeat(2, 1fr); }
-  
-  .mv { font-size: 1.2rem; }
-  
-  .two-col { grid-template-columns: 1fr; }
-  
-  #map { height: 280px; }
-  
-  .wrap { gap: 10px; }
-  
-  .countdown, .live-badge { font-size: 10px; }
-  
-  th, td { font-size: 9px; padding: 4px 6px; }
-  
-  .log-row { font-size: 9px; }
-  
-  .section-title { font-size: 9px; }
-  
-  .ml, .mu { font-size: 8px; }
-}
 
   .section-title { font-size: 10px; color: var(--accent); letter-spacing: .12em; margin-bottom: 12px; }
   .ml { font-size: 10px; color: #6b7fa8; letter-spacing: .08em; margin-bottom: 4px; }
@@ -85,7 +60,7 @@
   tr:last-child td { border-bottom: none; }
   .elev-bar { display: inline-block; height: 4px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; opacity: .7; }
 
-  .log-row { display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(26,42,68,.6); font-size: 11px; }
+  .log-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(26,42,68,.6); font-size: 11px; }
   .log-row:last-child { border-bottom: none; }
   .log-ts { color: #6b7fa8; flex: 1; }
   .log-dist { color: var(--text); font-weight: 700; white-space: nowrap; }
@@ -100,7 +75,6 @@
   .live-dot.alert { background: var(--red); }
   @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
 
-  /* ── Leaflet map overrides to match dark theme ── */
   #map { width: 100%; height: 420px; border: 1px solid var(--border); }
   .leaflet-container { background: #0a1628; font-family: var(--font-mono); }
   .leaflet-control-zoom a { background: var(--bg2); color: var(--accent); border-color: var(--border); }
@@ -114,6 +88,28 @@
   }
   .iss-label { color: #3b9eff; }
   .cdo-label { color: #22d3a0; }
+
+  /* ── MOBILE — must be last ── */
+  @media (max-width: 768px) {
+    body { padding: 10px; }
+    .wrap { gap: 10px; }
+    header { padding-bottom: 12px; }
+    h1 { font-size: 1rem; }
+    .header-right { width: 100%; justify-content: space-between; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .mv { font-size: 1.1rem; }
+    .ml, .mu { font-size: 8px; }
+    .two-col { grid-template-columns: 1fr; }
+    #map { height: 250px; }
+    .panel, .metric, .map-section { padding: 10px; }
+    .alert-banner { padding: 10px; font-size: 10px; }
+    .section-title { font-size: 9px; margin-bottom: 8px; }
+    th { font-size: 8px; padding: 4px 4px; letter-spacing: 0; }
+    td { font-size: 8px; padding: 4px 4px; }
+    .log-row { font-size: 9px; padding: 4px 0; }
+    .countdown, .live-badge { font-size: 10px; }
+    .refresh-btn { padding: 4px 10px; font-size: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -135,20 +131,18 @@
         <div style="font-size:11px;color:#6b7fa8;margin-top:3px">Watching over Cagayan de Oro · 8.48°N 124.65°E</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div class="header-right">
       <div class="countdown">Next refresh in <span id="nextRefresh">60</span>s</div>
       <div class="live-badge"><div class="live-dot" id="liveDot"></div><span id="liveStatus">connecting</span></div>
       <button class="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
     </div>
   </header>
 
-  <!-- alert banner -->
   <div class="alert-banner far" id="alertBanner">
     <span class="alert-icon"></span>
     <span id="alertText">Fetching ISS position…</span>
   </div>
 
-  <!-- metrics -->
   <div class="metrics">
     <div class="metric" id="cardDist">
       <div class="ml">Distance to CDO</div>
@@ -182,12 +176,11 @@
     </div>
   </div>
 
-  <!-- world map — replaced SVG with Leaflet -->
   <div class="map-section">
     <div class="section-title">Live orbital track</div>
     <div id="map"></div>
   </div>
-  
+
   <div class="panel">
     <div class="section-title">ISS within 500 km of CDO — next 24h</div>
     <table>
@@ -196,7 +189,6 @@
     </table>
   </div>
 
-  <!-- passes + log -->
   <div class="two-col">
     <div class="panel">
       <div class="section-title">ISS Above Horizon</div>
@@ -215,32 +207,19 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// Leaflet map setup
 const map = L.map('map', {
-  center: [20, 0],
-  zoom: 2,
-  minZoom: 2,
-  maxZoom: 6,
-  worldCopyJump: true,
-  zoomControl: true,
+  center: [20, 0], zoom: 2, minZoom: 2, maxZoom: 6,
+  worldCopyJump: true, zoomControl: true,
 });
 
-// First tile layer — satellite imagery
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  attribution: 'Tiles © Esri — Source: Esri, USGS, NOAA',
-  maxZoom: 18,
-  noWrap: false,
+  attribution: 'Tiles © Esri — Source: Esri, USGS, NOAA', maxZoom: 18, noWrap: false,
 }).addTo(map);
 
-// Second tile layer — labels on top
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-  attribution: '',
-  maxZoom: 18,
-  noWrap: false,
-  opacity: 0.6,
+  attribution: '', maxZoom: 18, noWrap: false, opacity: 0.6,
 }).addTo(map);
 
-// ISS marker
 const issIcon = L.icon({
   iconUrl: '/static/iss.png',
   iconSize: [100, 60],
@@ -253,56 +232,36 @@ const cdoIcon = L.divIcon({
     <circle cx="6" cy="6" r="4" fill="#22d3a0"/>
     <circle cx="6" cy="6" r="6" fill="none" stroke="#22d3a0" stroke-width="0.8" opacity="0.5"/>
   </svg>`,
-  iconSize: [12, 12],
-  iconAnchor: [6, 6],
+  iconSize: [12, 12], iconAnchor: [6, 6],
 });
 
 const issMarker = L.marker([0, 0], { icon: issIcon }).addTo(map);
 const cdoMarker = L.marker([8.4822, 124.6472], { icon: cdoIcon }).addTo(map);
 
-// CDO label
 L.marker([8.4822, 124.6472], {
   icon: L.divIcon({ className: 'cdo-label', html: 'CDO', iconAnchor: [-8, 4] })
 }).addTo(map);
 
-// CDO alert radius circle
 const cdoCircle = L.circle([8.4822, 124.6472], {
-  radius: 500000, // 500 km in meters
-  color: '#22d3a0',
-  weight: 1,
-  dashArray: '4 4',
-  fill: false,
-  opacity: 0.4,
+  radius: 500000, color: '#22d3a0', weight: 1,
+  dashArray: '4 4', fill: false, opacity: 0.4,
 }).addTo(map);
 
-// Orbital trail
-const trailLine = L.polyline([], {
-  color: '#00ff41',
-  weight: 2.5,
-  opacity: 0.9,
-}).addTo(map);
-
-// Trail and label state
+const trailLine = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
 const trailPoints = [];
 let trailPolyline = null;
 
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
-
-  // Clear trail if ISS crosses the dateline (jumps more than 180°)
   if (trailPoints.length > 0) {
     const lastLon = trailPoints[trailPoints.length - 1][1];
-    if (Math.abs(lon - lastLon) > 180) {
-      trailPoints.length = 0; // clear trail on dateline crossing
-    }
+    if (Math.abs(lon - lastLon) > 180) trailPoints.length = 0;
   }
-
   trailPoints.push([lat, lon]);
   if (trailPoints.length > 60) trailPoints.shift();
   trailLine.setLatLngs(trailPoints);
 }
 
-// All original JS unchanged below
 async function fetchISS(){
   try {
     const r = await fetch('/api/iss');
@@ -313,11 +272,11 @@ async function fetchISS(){
     document.getElementById('mLon').textContent   = d.longitude.toFixed(2)+'°';
     document.getElementById('mAlt').textContent   = d.altitude.toFixed(0);
     document.getElementById('mSpeed').textContent = Math.round(d.velocity).toLocaleString();
-    const banner = document.getElementById('alertBanner');
-    const alertText = document.getElementById('alertText');
-    const liveDot = document.getElementById('liveDot');
-    const liveStatus = document.getElementById('liveStatus');
-    const cardDist = document.getElementById('cardDist');
+    const banner=document.getElementById('alertBanner');
+    const alertText=document.getElementById('alertText');
+    const liveDot=document.getElementById('liveDot');
+    const liveStatus=document.getElementById('liveStatus');
+    const cardDist=document.getElementById('cardDist');
     if(d.is_nearby){
       banner.className='alert-banner near';
       alertText.textContent=`ISS is only ${Math.round(d.distance).toLocaleString()} km away! Look up at the sky over ${d.city}!`;
@@ -385,7 +344,7 @@ async function fetchProximity(){
 async function fetchAll(){
   await fetchISS();
   await fetchPasses();
-  await fetchProximity()
+  await fetchProximity();
   await fetchLog();
 }
 
