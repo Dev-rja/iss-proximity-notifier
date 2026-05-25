@@ -9,7 +9,7 @@ import monkey_patch  # MUST be first — fixes Python 3.13 + pyorbital round() b
 from dotenv import load_dotenv
 load_dotenv()
 from config import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM, PROXIMITY_RADIUS
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template_string, request
 from datetime import datetime, timezone
 import os
 
@@ -104,7 +104,8 @@ def log_data():
 @app.route("/api/trail")
 def trail_data():
     from storage import get_trail
-    rows = get_trail(60)
+    limit = int(request.args.get('limit', 288))
+    rows = get_trail(limit)
     return jsonify([{"lat": r[0], "lon": r[1]} for r in rows])
 
 if __name__ == "__main__":

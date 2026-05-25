@@ -113,7 +113,7 @@ def get_recent(limit=20):
         return rows
  
     
-def get_trail(limit=60):
+def get_trail(limit=288):
     """Fetch the last N positions for the orbital trail."""
     sql = "SELECT latitude, longitude FROM iss_log ORDER BY id DESC LIMIT ?"
     if USE_TURSO:
