@@ -235,7 +235,7 @@ const cdoIcon = L.divIcon({
   iconSize: [12, 12], iconAnchor: [6, 6],
 });
 
-const issMarker = L.marker([0, 0], { icon: issIcon }).addTo(map);
+const issMarker = L.marker([0, 0], { icon: issIcon, opacity: 0 }).addTo(map);
 const cdoMarker = L.marker([8.4822, 124.6472], { icon: cdoIcon }).addTo(map);
 
 L.marker([8.4822, 124.6472], {
@@ -253,6 +253,7 @@ let trailPolyline = null;
 
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
+  issMarker.setOpacity(1);
   if (trailPoints.length > 0) {
     const lastLon = trailPoints[trailPoints.length - 1][1];
     if (Math.abs(lon - lastLon) > 180) trailPoints.length = 0;
