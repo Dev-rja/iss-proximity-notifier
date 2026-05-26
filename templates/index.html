@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><circle cx='20' cy='20' r='18' stroke='%233b9eff' stroke-width='1.5' stroke-dasharray='4 3' opacity='.4' fill='%2305070a'/><circle cx='20' cy='20' r='3' fill='%233b9eff'/><rect x='14' y='18.5' width='12' height='3' rx='1.5' fill='%233b9eff' opacity='.8'/><rect x='18.5' y='14' width='3' height='12' rx='1.5' fill='%233b9eff' opacity='.8'/><circle cx='20' cy='20' r='7' stroke='%2322d3a0' stroke-width='1' opacity='.3'/></svg>"/>
-<title>ISS Proximity Notifier — {{ city }}</title>
+<title>ISS Proximity Notifier</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
@@ -205,8 +205,10 @@
 
 </div>
 
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// @ts-nocheck
 const map = L.map('map', {
   center: [20, 0], zoom: 2, minZoom: 2, maxZoom: 6,
   worldCopyJump: true, zoomControl: true,
@@ -248,25 +250,32 @@ L.marker([{{ lat }}, {{ lon }}], {
 
 // city circle
 const cdoCircle = L.circle([{{ lat }}, {{ lon }}], {
-  radius: 500000, color: '#22d3a0', weight: 1,
+  radius: {{ alert_radius }} * 1000, color: '#22d3a0', weight: 1,
   dashArray: '4 4', fill: false, opacity: 0.4,
 }).addTo(map);
 
-
-const trailLine = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
+// Replace single trailLine with segments array
+const trailSegments = [];
+let currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
+trailSegments.push(currentSegment);
 const trailPoints = [];
-let trailPolyline = null;
 
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
   issMarker.setOpacity(1);
+
   if (trailPoints.length > 0) {
     const lastLon = trailPoints[trailPoints.length - 1][1];
-    if (Math.abs(lon - lastLon) > 180) trailPoints.length = 0;
+    if (Math.abs(lon - lastLon) > 180) {
+      // Start a new segment instead of clearing
+      currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
+      trailSegments.push(currentSegment);
+    }
   }
+
   trailPoints.push([lat, lon]);
-  if (trailPoints.length > 288) trailPoints.shift();
-  trailLine.setLatLngs(trailPoints);
+  if (trailPoints.length > 40) trailPoints.shift();
+  currentSegment.addLatLng([lat, lon]);
 }
 
 async function fetchISS(){
@@ -365,15 +374,18 @@ setInterval(() => {
 // Load persistent trail from DB on startup, then fetch live data
 async function loadTrail(){
   try {
-    const rows = await fetch('/api/trail?limit=288').then(r => r.json());
+    const rows = await fetch('/api/trail?limit=40').then(r => r.json());
     rows.forEach(p => {
       if (trailPoints.length > 0) {
         const lastLon = trailPoints[trailPoints.length - 1][1];
-        if (Math.abs(p.lon - lastLon) > 180) trailPoints.length = 0;
+        if (Math.abs(p.lon - lastLon) > 180) {
+          currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
+          trailSegments.push(currentSegment);
+        }
       }
       trailPoints.push([p.lat, p.lon]);
+      currentSegment.addLatLng([p.lat, p.lon]);
     });
-    trailLine.setLatLngs(trailPoints);
   } catch(e){ console.error('Trail load error:', e); }
 }
 
