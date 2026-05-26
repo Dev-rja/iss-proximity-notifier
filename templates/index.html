@@ -265,7 +265,7 @@ function updateMap(lat, lon) {
     if (Math.abs(lon - lastLon) > 180) trailPoints.length = 0;
   }
   trailPoints.push([lat, lon]);
-  if (trailPoints.length > 36) trailPoints.shift();
+  if (trailPoints.length > 288) trailPoints.shift();
   trailLine.setLatLngs(trailPoints);
 }
 
@@ -365,7 +365,7 @@ setInterval(() => {
 // Load persistent trail from DB on startup, then fetch live data
 async function loadTrail(){
   try {
-    const rows = await fetch('/api/trail?limit=36').then(r => r.json());
+    const rows = await fetch('/api/trail?limit=288').then(r => r.json());
     rows.forEach(p => {
       if (trailPoints.length > 0) {
         const lastLon = trailPoints[trailPoints.length - 1][1];

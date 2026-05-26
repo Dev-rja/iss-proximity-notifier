@@ -104,7 +104,7 @@ def log_data():
 @app.route("/api/trail")
 def trail_data():
     from storage import get_trail
-    limit = int(request.args.get('limit', 36))
+    limit = int(request.args.get('limit', 288))
     rows = get_trail(limit)
     return jsonify([{"lat": r[0], "lon": r[1]} for r in rows])
 
