@@ -254,28 +254,19 @@ const cdoCircle = L.circle([{{ lat }}, {{ lon }}], {
   dashArray: '4 4', fill: false, opacity: 0.4,
 }).addTo(map);
 
-// Replace single trailLine with segments array
-const trailSegments = [];
-let currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
-trailSegments.push(currentSegment);
+const trailLine = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
 const trailPoints = [];
 
 function updateMap(lat, lon) {
   issMarker.setLatLng([lat, lon]);
   issMarker.setOpacity(1);
-
   if (trailPoints.length > 0) {
     const lastLon = trailPoints[trailPoints.length - 1][1];
-    if (Math.abs(lon - lastLon) > 180) {
-      // Start a new segment instead of clearing
-      currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
-      trailSegments.push(currentSegment);
-    }
+    if (Math.abs(lon - lastLon) > 180) trailPoints.length = 0;
   }
-
   trailPoints.push([lat, lon]);
-  if (trailPoints.length > 40) trailPoints.shift();
-  currentSegment.addLatLng([lat, lon]);
+  if (trailPoints.length > 36) trailPoints.shift();
+  trailLine.setLatLngs(trailPoints);
 }
 
 async function fetchISS(){
@@ -374,18 +365,15 @@ setInterval(() => {
 // Load persistent trail from DB on startup, then fetch live data
 async function loadTrail(){
   try {
-    const rows = await fetch('/api/trail?limit=40').then(r => r.json());
+    const rows = await fetch('/api/trail?limit=36').then(r => r.json());
     rows.forEach(p => {
       if (trailPoints.length > 0) {
         const lastLon = trailPoints[trailPoints.length - 1][1];
-        if (Math.abs(p.lon - lastLon) > 180) {
-          currentSegment = L.polyline([], { color: '#00ff41', weight: 2.5, opacity: 0.9 }).addTo(map);
-          trailSegments.push(currentSegment);
-        }
+        if (Math.abs(p.lon - lastLon) > 180) trailPoints.length = 0;
       }
       trailPoints.push([p.lat, p.lon]);
-      currentSegment.addLatLng([p.lat, p.lon]);
     });
+    trailLine.setLatLngs(trailPoints);
   } catch(e){ console.error('Trail load error:', e); }
 }
 

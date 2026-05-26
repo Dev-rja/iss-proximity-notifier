@@ -21,7 +21,7 @@ Track the International Space Station in real-time and receive notifications whe
 ## Local vs Deployed
 
 **Running locally (simplest):**
-Clone the project, set Gmail credentials in a `.env` file, and run `python app.py` or `python main.py`. Email alerts and the web dashboard work as long as the script is running. No Vercel or Turso needed.
+Clone the project, configure your credentials, and run `python app.py` or `python main.py`. Email alerts and the web dashboard work as long as the script is running. No Vercel or Turso needed.
 
 **Deploying to Vercel (24/7):**
 Deploy to Vercel + set up Turso + cron-job.org for fully autonomous tracking and alerts even when the machine is off. See the Deployment section below.
@@ -40,7 +40,7 @@ cd iss-notifier
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Create a .env file with Gmail credentials (see Gmail SMTP Setup)
+# 3. Configure your credentials (see Gmail SMTP Setup)
 
 # 4a. Run terminal tracker only
 python main.py
@@ -93,27 +93,14 @@ The project sends email alerts via Gmail. To enable this:
 Go to https://myaccount.google.com/security and enable 2-Step Verification.
 
 **Step 2 — Create an App Password**
-- Go to https://myaccount.google.com/apppasswords
-- Select app: **Mail**, device: **Other** (name it "ISS Notifier")
-- Copy the 16-character password generated
+Go to https://myaccount.google.com/apppasswords and create an app password for this project. Copy the 16-character password generated.
 
-**Step 3 — Create a `.env` file in the project root**
-```
-GMAIL_USER=sender@gmail.com
-GMAIL_APP_PASSWORD=...
-ALERT_EMAIL=recipient@email.com
-```
+**Step 3 — Store your credentials securely**
+Create a `.env` file in the project root and add your Gmail credentials there.
 
 > **Important:** The `.env` file is listed in `.gitignore` and must never be committed to GitHub.
 
-**For Vercel deployment**, add these under **Settings → Environment Variables** instead of using a `.env` file:
-```
-GMAIL_USER
-GMAIL_APP_PASSWORD
-ALERT_EMAIL
-TURSO_DATABASE_URL
-TURSO_AUTH_TOKEN
-```
+**For Vercel deployment**, add your credentials under **Settings → Environment Variables** instead of using a `.env` file.
 
 
 ## Deployment (Vercel + Turso + cron-job.org)
@@ -121,33 +108,16 @@ TURSO_AUTH_TOKEN
 Follow these steps for a fully autonomous 24/7 deployment:
 
 **Step 1 — Deploy to Vercel**
-- Push the repo to GitHub
-- Go to https://vercel.com and import the repository
-- Vercel will auto-detect the Flask app and deploy it
+Push the repo to GitHub, go to https://vercel.com and import the repository. Vercel will auto-detect the Flask app and deploy it.
 
 **Step 2 — Set up Turso (cloud database)**
-- Go to https://app.turso.tech and create a free account
-- Create a new database named `iss-notifier`
-- Click **Create Token** (Read & Write, Never expires)
-- Copy the **Database URL** and **Auth Token**
-- Add them to Vercel Environment Variables:
-
+Go to https://app.turso.tech, create a free account, and create a new database. Generate a read/write token and add the database URL and token to Vercel Environment Variables.
 
 **Step 3 — Set up cron-job.org (auto-ping)**
-- Go to https://cron-job.org and create a free account
-- Create a new cronjob:
-  - URL: `https://your-app.vercel.app/api/iss`
-  - Schedule: every 1 minute
-- This keeps the position log updating 24/7 even when no one visits the site
+Go to https://cron-job.org, create a free account, and set up a cronjob that pings your `/api/iss` endpoint every minute. This keeps the position log updating 24/7 even when no one visits the site.
 
-**Step 4 — Add all environment variables to Vercel**
-```
-GMAIL_USER
-GMAIL_APP_PASSWORD
-ALERT_EMAIL
-TURSO_DATABASE_URL
-TURSO_AUTH_TOKEN
-```
+**Step 4 — Add all required credentials to Vercel Environment Variables**
+Add your Gmail credentials and Turso credentials under Vercel project Settings → Environment Variables.
 
 **Step 5 — Redeploy**
 Push any change to GitHub and Vercel will redeploy automatically.
