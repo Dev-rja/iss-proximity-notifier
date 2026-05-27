@@ -132,7 +132,6 @@
       </div>
     </div>
     <div class="header-right">
-      <div class="countdown">Next refresh in <span id="nextRefresh">60</span>s</div>
       <div class="live-badge"><div class="live-dot" id="liveDot"></div><span id="liveStatus">connecting</span></div>
       <button class="refresh-btn" onclick="fetchAll()">↻ Refresh</button>
     </div>
@@ -355,12 +354,7 @@ async function fetchAll(){
   await fetchLog();
 }
 
-let countdown = {{ poll_interval }};
-setInterval(() => {
-  countdown--;
-  document.getElementById('nextRefresh').textContent = countdown;
-  if(countdown <= 0){ countdown = {{ poll_interval }}; fetchAll(); }
-}, 1000);
+setInterval(() => { fetchAll(); }, {{ poll_interval }} * 1000);
 
 // Load persistent trail from DB on startup, then fetch live data
 async function loadTrail(){
