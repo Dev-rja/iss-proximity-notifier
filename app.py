@@ -8,7 +8,7 @@ Then open: http://localhost:5000
 import monkey_patch  # MUST be first — fixes Python 3.13 + pyorbital round() bug
 from dotenv import load_dotenv
 load_dotenv()
-from config import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM, PROXIMITY_RADIUS
+from config import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM, PROXIMITY_RADIUS, POLL_INTERVAL
 from flask import Flask, jsonify, render_template_string, request
 from datetime import datetime, timezone
 import os
@@ -36,7 +36,8 @@ def index():
     proximity_radius=PROXIMITY_RADIUS, 
     city=MY_CITY,
     lat=MY_LAT,
-    lon=MY_LON
+    lon=MY_LON,
+    poll_interval=POLL_INTERVAL
 )
 
 @app.route("/api/iss")

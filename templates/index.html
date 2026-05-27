@@ -355,11 +355,11 @@ async function fetchAll(){
   await fetchLog();
 }
 
-let countdown = 60;
+let countdown = {{ poll_interval }};
 setInterval(() => {
   countdown--;
   document.getElementById('nextRefresh').textContent = countdown;
-  if(countdown <= 0){ countdown = 60; fetchAll(); }
+  if(countdown <= 0){ countdown = {{ poll_interval }}; fetchAll(); }
 }, 1000);
 
 // Load persistent trail from DB on startup, then fetch live data

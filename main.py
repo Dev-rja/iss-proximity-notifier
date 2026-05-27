@@ -77,7 +77,8 @@ def main():
     check_iss()
     get_next_passes()
 
-    schedule.every(POLL_INTERVAL).seconds.do(check_iss)
+    SAFE_INTERVAL = max(POLL_INTERVAL, 10)
+    schedule.every(SAFE_INTERVAL).seconds.do(check_iss)
     schedule.every(5).minutes.do(print_recent_log)
     schedule.every(2).hours.do(get_next_passes)
 

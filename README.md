@@ -76,7 +76,8 @@ ALERT_RADIUS_KM = 500
 PROXIMITY_RADIUS = 1500
 
 # How often to poll the ISS API (in seconds)
-POLL_INTERVAL = 60
+# Do NOT go below 10 — you risk getting rate limited by wheretheiss.at
+POLL_INTERVAL = 15
 
 # Local database file (used when running locally)
 DB_FILE = "iss_log.db"

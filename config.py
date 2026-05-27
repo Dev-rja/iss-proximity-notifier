@@ -11,7 +11,8 @@ ALERT_RADIUS_KM = 500
 PROXIMITY_RADIUS = 1000
 
 # How often to check (in seconds)
-POLL_INTERVAL = 60
+# Do NOT go below 10 — you risk getting rate limited by wheretheiss.at
+POLL_INTERVAL = 15
 
 # Database file
 DB_FILE = "iss_log.db"
