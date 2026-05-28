@@ -371,7 +371,7 @@ async function loadTrail(){
   } catch(e){ console.error('Trail load error:', e); }
 }
 
-loadTrail().then(() => fetchAll());
+Promise.all([loadTrail(), fetchAll()]);
 
 </script>
 </body>
