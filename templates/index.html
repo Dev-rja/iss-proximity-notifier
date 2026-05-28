@@ -347,14 +347,23 @@ async function fetchProximity(){
   } catch(e){ console.error('Proximity fetch error:', e); }
 }
 
-async function fetchAll(){
+// Silent auto-refresh — no button feedback
+async function autoRefresh(){
   await fetchISS();
   await fetchPasses();
   await fetchProximity();
   await fetchLog();
 }
 
-setInterval(() => { fetchAll(); }, {{ poll_interval }} * 1000);
+// Manual refresh — with button feedback
+async function fetchAll(){
+  const btn = document.querySelector('.refresh-btn');
+  if(btn){ btn.textContent = '↻ Refreshing...'; btn.disabled = true; }
+  await Promise.all([fetchISS(), fetchPasses(), fetchProximity(), fetchLog()]);
+  if(btn){ btn.textContent = '↻ Refresh'; btn.disabled = false; }
+}
+
+setInterval(() => { autoRefresh(); }, {{ poll_interval }} * 1000);
 
 // Load persistent trail from DB on startup, then fetch live data
 async function loadTrail(){
