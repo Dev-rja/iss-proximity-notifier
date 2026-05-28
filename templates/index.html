@@ -367,7 +367,7 @@ async function loadTrail(){
       }
       trailPoints.push([p.lat, p.lon]);
     });
-    trailLine.setLatLngs(trailPoints);
+  // trail will be drawn when updateMap is called
   } catch(e){ console.error('Trail load error:', e); }
 }
 
