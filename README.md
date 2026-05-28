@@ -7,7 +7,7 @@ Track the International Space Station in real-time and receive notifications whe
 
 ## Features
 
-- Live ISS tracking — polls position every 60 seconds
+- Live ISS tracking — polls position every 5 seconds
 - Gmail email alert — sends a notification when ISS enters the alert radius
 - cron-job.org — pings ISS API every minute automatically, no browser needed
 - Cloud database — position log stored in Turso (SQLite-compatible, hosted)
@@ -21,7 +21,7 @@ Track the International Space Station in real-time and receive notifications whe
 ## Local vs Deployed
 
 **Running locally (simplest):**
-Clone the project, configure your credentials, and run `python app.py` or `python main.py`. Email alerts and the web dashboard work as long as the script is running. No Vercel or Turso needed.
+Clone the project, configure credentials, and run `python app.py` or `python main.py`. Email alerts and the web dashboard work as long as the script is running. No Vercel or Turso needed.
 
 **Deploying to Vercel (24/7):**
 Deploy to Vercel + set up Turso + cron-job.org for fully autonomous tracking and alerts even when the machine is off. See the Deployment section below.
@@ -40,7 +40,7 @@ cd iss-notifier
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure your credentials (see Gmail SMTP Setup)
+# 3. Configure credentials (see Gmail SMTP Setup)
 
 # 4a. Run terminal tracker only
 python main.py
@@ -76,8 +76,8 @@ ALERT_RADIUS_KM = 500
 PROXIMITY_RADIUS = 1500
 
 # How often to poll the ISS API (in seconds)
-# Do NOT go below 10 — you risk getting rate limited by wheretheiss.at
-POLL_INTERVAL = 15
+# Do NOT go below 5 — risk of getting rate limited by wheretheiss.at
+POLL_INTERVAL = 5
 
 # Local database file (used when running locally)
 DB_FILE = "iss_log.db"
@@ -96,12 +96,12 @@ Go to https://myaccount.google.com/security and enable 2-Step Verification.
 **Step 2 — Create an App Password**
 Go to https://myaccount.google.com/apppasswords and create an app password for this project. Copy the 16-character password generated.
 
-**Step 3 — Store your credentials securely**
-Create a `.env` file in the project root and add your Gmail credentials there.
+**Step 3 — Store credentials securely**
+Create a `.env` file in the project root and add the Gmail credentials there.
 
 > **Important:** The `.env` file is listed in `.gitignore` and must never be committed to GitHub.
 
-**For Vercel deployment**, add your credentials under **Settings → Environment Variables** instead of using a `.env` file.
+**For Vercel deployment**, add credentials under **Settings → Environment Variables** instead of using a `.env` file.
 
 
 ## Deployment (Vercel + Turso + cron-job.org)
@@ -115,10 +115,10 @@ Push the repo to GitHub, go to https://vercel.com and import the repository. Ver
 Go to https://app.turso.tech, create a free account, and create a new database. Generate a read/write token and add the database URL and token to Vercel Environment Variables.
 
 **Step 3 — Set up cron-job.org (auto-ping)**
-Go to https://cron-job.org, create a free account, and set up a cronjob that pings your `/api/iss` endpoint every minute. This keeps the position log updating 24/7 even when no one visits the site.
+Go to https://cron-job.org, create a free account, and set up a cronjob that pings the `/api/iss` endpoint every minute. This keeps the position log updating 24/7 even when no one visits the site.
 
 **Step 4 — Add all required credentials to Vercel Environment Variables**
-Add your Gmail credentials and Turso credentials under Vercel project Settings → Environment Variables.
+Add Gmail credentials and Turso credentials under Vercel project Settings → Environment Variables.
 
 **Step 5 — Redeploy**
 Push any change to GitHub and Vercel will redeploy automatically.
@@ -165,7 +165,7 @@ iss-notifier/
 - ISS proximity panel — exact entry/closest/exit times within proximity radius
 - Pass schedule — when ISS is visible above the horizon from the target city
 - Position log — last 20 readings from the database
-- Auto-refresh — updates every 60 seconds automatically
+- Auto-refresh — updates every 5 seconds automatically
 
 
 ## Key Concepts

@@ -18,7 +18,6 @@ from distance   import haversine
 from storage    import init_db, save_position, get_recent
 from predictor  import get_next_passes_data, get_proximity_passes_data
 from mailer     import send_iss_alert
-from config     import MY_CITY, MY_LAT, MY_LON, ALERT_RADIUS_KM
 
 app = Flask(__name__)
 
